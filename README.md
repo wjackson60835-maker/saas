@@ -52,6 +52,27 @@ powershell -ExecutionPolicy Bypass -File deploy\update.ps1
 
 ## 本地开发推送
 
+**一键提交并推送（推荐）：**
+
+```powershell
+cd D:\saas
+powershell -ExecutionPolicy Bypass -File deploy\git-push.ps1 "修改说明"
+```
+
+不写说明则自动用时间戳：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File deploy\git-push.ps1
+```
+
+Linux / Mac：
+
+```bash
+bash deploy/git-push.sh "修改说明"
+```
+
+手动方式：
+
 ```powershell
 cd d:\saas
 git add -A
