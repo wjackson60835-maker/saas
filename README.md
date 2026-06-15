@@ -52,23 +52,28 @@ powershell -ExecutionPolicy Bypass -File deploy\update.ps1
 
 ## 本地开发推送
 
-**一键提交并推送（推荐）：**
+**一键提交并推送（推荐，提交说明自动根据改动生成）：**
 
 ```powershell
 cd D:\saas
-powershell -ExecutionPolicy Bypass -File deploy\git-push.ps1 "修改说明"
-```
-
-不写说明则自动用时间戳：
-
-```powershell
 powershell -ExecutionPolicy Bypass -File deploy\git-push.ps1
 ```
 
-Linux / Mac：
+可选手动前缀 / 交互编辑 / 跳过确认：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File deploy\git-push.ps1 -Message "修复开奖对照"
+powershell -ExecutionPolicy Bypass -File deploy\git-push.ps1 -Interactive
+powershell -ExecutionPolicy Bypass -File deploy\git-push.ps1 -Yes
+```
+
+Linux / 服务器：
 
 ```bash
-bash deploy/git-push.sh "修改说明"
+bash deploy/git-push.sh              # 自动生成：更新 api.php(修改), git-push.sh(修改)
+bash deploy/git-push.sh -i           # 可编辑说明
+bash deploy/git-push.sh "修复说明"   # 手动说明 + 自动摘要
+bash deploy/git-push.sh -y           # 不确认直接提交
 ```
 
 手动方式：
