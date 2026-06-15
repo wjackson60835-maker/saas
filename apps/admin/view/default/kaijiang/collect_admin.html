@@ -226,9 +226,9 @@
 
         <div id="pingmaStatsBlock" class="hidden">
           <div id="pingmaStatsWarn" class="scope-hint scope-hint--pingma hidden" style="margin-bottom:10px;"></div>
+          <div id="pingmaActualPayoutBlock" class="hidden" hidden aria-hidden="true" style="display:none !important;">
           <h4>平码赔率统计</h4>
           <div id="pingmaPayoutOverview" class="pingma-payout-box">—</div>
-          <div id="pingmaRecommendDraw" class="pingma-payout-box pingma-payout-box--profit hidden"></div>
           <table class="layui-table collect-mini-table">
             <thead><tr><th>玩法</th><th>类型</th><th>选号/选肖</th><th>全部球号</th><th>赔率</th><th>笔数</th><th>总组数</th><th>中组数</th><th>下注合计</th><th>派彩合计</th><th>庄家盈亏</th></tr></thead>
             <tbody id="pingmaPayoutByPlayBody"></tbody>
@@ -239,6 +239,8 @@
             <thead><tr><th>ID</th><th>内容</th><th>组数</th><th>中组</th><th>每组</th><th>下注</th><th>赔率</th><th>中1组赔</th><th>派彩</th><th>盈亏</th><th>中奖组合（含球号）</th><th>对应球号</th><th>期号</th><th>渠道</th></tr></thead>
             <tbody id="pingmaPayoutRowsBody"></tbody>
           </table>
+          </div>
+          <div id="pingmaRecommendDraw" class="pingma-payout-box pingma-payout-box--profit hidden"></div>
           <p id="statsTipsPingma" style="margin:16px 0 10px;color:#666;font-size:13px;">
             说明：平码按玩法汇总；下方「未买覆盖」与「购买热度排行」基于筛选范围内平码明细（肖类展开球号计入已买号码）。
           </p>
@@ -629,7 +631,8 @@
     const byPlayEl = document.getElementById('pingmaPayoutByPlayBody');
     const rowsEl = document.getElementById('pingmaPayoutRowsBody');
     const hintEl = document.getElementById('pingmaPayoutRowsHint');
-    if (!ovEl || !byPlayEl || !rowsEl) return;
+    const actualBlock = document.getElementById('pingmaActualPayoutBlock');
+    const showActualPayout = !!(actualBlock && !actualBlock.hasAttribute('hidden'));
     payout = payout || {};
     if (payout.recommendedDraws && payout.recommendedDraws.length) {
       renderPingmaRecommendDraws(payout);
@@ -645,6 +648,7 @@
     } else if (!payout.available && !pingmaRecommendLoading) {
       renderPingmaRecommendDraw(null);
     }
+    if (!showActualPayout || !ovEl || !byPlayEl || !rowsEl) return;
     if (!payout.available) {
       const dr = payout.drawResolve || {};
       let hint = payout.note || '请填写已开奖期号后刷新统计。';
