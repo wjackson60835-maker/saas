@@ -1,0 +1,572 @@
+﻿<!DOCTYPE html>
+<!-- saved from url=(0048)https://jiudianbanzd.00577.shop/ziliao/APPLB.htm -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="charset=gb2312">
+<meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1, user-scalable=no">
+<script src="./jquery-1.10.2.min.js.����"></script>
+<script src="./swiper.min.js.����"></script>
+<link href="./swiper.min.css" rel="stylesheet" type="text/css">
+<style>
+html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .table-link a {
+    text-decoration: none;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+  .table-link td {
+    text-align: center;
+    vertical-align: middle;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 35px;
+    white-space: nowrap; /* ��ֹ�ı����� */
+    overflow: hidden; /* ����������� */
+    text-overflow: ellipsis; /* �����ʱ��ʾʡ�Ժ� */
+    width: 100%; /* ��Ԫ��������Ϊ100% */
+  }
+  .table-link a font {
+    line-height: 35px;
+  }
+</style>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  .swiper-wrapper {
+    height: auto
+  }
+
+  .fivetab {
+    background: #f5f5f5;
+  }
+
+  .fivetab {
+    position: relative;
+    z-index: 0;
+    color: #333;
+    background: #fff;
+  }
+
+  .fivetab ul,
+  .fivetab li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .fivetab a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .fivetab-tit {
+    font-size: 16px;
+  }
+
+  .fivetab-tit.swiper-wrapper {
+    display: block;
+  }
+
+  .fivetab-tit.swiper-wrapper::after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+
+  .fivetab-tit.swiper-wrapper div {
+    float: left;
+  }
+
+  .fivetab-tit .swiper-slide {
+    height: 40px;
+    line-height: 36px;
+    text-align: center;
+    border: solid 2px #fff;
+    box-sizing: border-box;
+    background: #eee;
+    overflow: hidden;
+  }
+
+  .fivetab-tit .swiper-slide.active-nav {
+    color: #fff;
+    background: #f00;
+  }
+
+  .fivetab-box {
+    padding-bottom: 0px;
+    font-size: 16px;
+  }
+
+  .fivetab-box .banner-bar {
+    padding-left: 2px;
+    padding-right: 2px;
+    text-align: center;
+  }
+
+  .fivetab-box .banner-bar img {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+  }
+
+  .fivetab .down-bar {
+    max-width: 800px;
+    line-height: 1.75;
+    margin: 0 auto;
+    padding: 15px 0;
+    box-sizing: border-box;
+  }
+
+  .fivetab .down-bar-boxt {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .fivetab .down-bar-boxt-1 {
+    width: 30%;
+    min-width: 130px;
+    text-align: center;
+  }
+
+  .fivetab .down-bar-boxt-1 img {
+    width: 100px;
+    height: auto;
+    border-radius: 18px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, .1);
+  }
+
+  .fivetab .down-bar-boxt-2 {
+    width: 70%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .fivetab .down-bar-boxt-2l {
+    width: 50%;
+  }
+
+  .fivetab .down-bar-boxt-2r {
+    width: 50%;
+  }
+
+  .fivetab .down-bar-boxt-2r img {
+    width: 22px;
+  }
+
+  .fivetab .down-bar-rz {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    color: #15bc83;
+  }
+
+  .fivetab .down-bar-rz img {
+    width: auto;
+    height: 24px;
+    margin-right: 3px;
+  }
+
+  .fivetab .down-bar-boxf {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0 5px;
+    text-align: center;
+    color: #fff;
+  }
+
+  .fivetab .down-bar-boxf div {
+    display: flex;
+    justify-content: center;
+    width: 33.33%;
+  }
+
+  .fivetab .down-bar-boxf a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    line-height: 40px;
+    width: 80%;
+    border-radius: 5px;
+    transition: all 0.2s;
+  }
+
+  .fivetab .down-bar-boxf a img {
+    width: 24px;
+    margin-right: 3px;
+  }
+
+  .fivetab .down-bar-boxf a:hover {
+    margin-top: -5px;
+  }
+
+  .fivetab .down-bar-boxf-1 {}
+
+  .fivetab .down-bar-boxf-1 a {
+    background: #c34dff;
+  }
+
+  .fivetab .down-bar-boxf-2 {}
+
+  .fivetab .down-bar-boxf-2 a {
+    background: #ff5b5b;
+  }
+
+  .fivetab .down-bar-boxf-3 {}
+
+  .fivetab .down-bar-boxf-3 a {
+    background: #3ebc40;
+  }
+
+  .fivetab_tz {
+    text-align: center;
+    border-top: solid 10px #eee;
+    background: #fff;
+  }
+
+  .fivetab_tz img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .fivetab_tzs {
+    display: none;
+  }
+
+  .last_row {
+    width: 25% !important;
+  }
+
+  @media screen and (max-width:500px) {
+    .fivetab-tit {
+      font-size: 13px;
+    }
+
+    .fivetab-tit .swiper-slide {
+      height: 30px;
+      line-height: 26px;
+    }
+
+    .fivetab-box {
+      padding-bottom: 0px;
+      font-size: 13px;
+    }
+
+    .fivetab .down-bar {
+      padding: 10px 0;
+      font-size: 13px;
+    }
+
+    .fivetab .down-bar-boxt-1 {
+      width: 20%;
+      min-width: 100px;
+      text-align: center;
+    }
+
+    .fivetab .down-bar-boxt-1 img {
+      width: 70px;
+      border-radius: 12px;
+      box-shadow: 0 3px 5px rgba(0, 0, 0, .1);
+    }
+
+    .fivetab .down-bar-boxt-2 {
+      width: 80%;
+    }
+
+    .fivetab .down-bar-boxt-2r img {
+      width: 16px;
+    }
+
+    .fivetab .down-bar-rz img {
+      height: 20px;
+      margin-right: 3px;
+    }
+
+    .fivetab .down-bar-boxf a {
+      height: 34px;
+      line-height: 34px;
+      width: 90%;
+      border-radius: 5px;
+    }
+
+    .fivetab .down-bar-boxf a img {
+      width: 24px;
+      margin-right: 3px;
+    }
+
+    .fivetab .down-bar-boxf a:hover {
+      margin-top: 0;
+    }
+
+    .fivetab .down-bar-boxf a img {
+      width: 20px;
+    }
+
+    .fivetab_tz {
+      display: none;
+    }
+
+    .fivetab_tzs {
+      display: block;
+      text-align: center;
+      border-top: solid 6px #eee;
+      background: #fff;
+    }
+
+    .fivetab_tzs img {
+      max-width: 100%;
+      height: auto;
+    }
+  }
+</style>
+
+<!-- ���� -->
+<style id="tsbrowser_video_independent_player_style" type="text/css">
+      [tsbrowser_force_max_size] {
+        width: 100% !important;
+        height: 100% !important;
+        left: 0px !important;
+        top: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        transform: none !important;
+      }
+      [tsbrowser_force_fixed] {
+        position: fixed !important;
+        z-index: 9999 !important;
+        background: black !important;
+      }
+      [tsbrowser_force_hidden] {
+        opacity: 0 !important;
+        z-index: 0 !important;
+      }
+      [tsbrowser_hide_scrollbar] {
+        overflow: hidden !important;
+      }
+      [tsbrowser_display_none] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      [tsbrowser_force_show] {
+        display: black !important;
+        visibility: visible !important;
+        opacity: 0;
+      }</style></head><body style=""><div class="fivetab">
+  <div class="swiper-container swiper-container-initialized swiper-container-horizontal swiper-container-free-mode" id="fivetab1_1">
+    <div class="swiper-wrapper fivetab-tit" style="transition-duration: 0ms; transform: translate3d(0px, 0px, 0px);">
+      <div class="swiper-slide swiper-slide-active active-nav" style="width: 180px;">1�Ų�Ʊ</div>
+      <div class="swiper-slide swiper-slide-next" style="width: 180px;">���Ų�Ʊ</div>
+      <div class="swiper-slide" style="width: 180px;">�ʹ�����</div>
+    </div>
+  <span class="swiper-notification" aria-live="assertive" aria-atomic="true"></span></div>
+  <div class="swiper-container swiper-container-initialized swiper-container-horizontal" id="fivetab2_1">
+    <div class="swiper-wrapper" style="transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;">
+      <!--1�Ų�Ʊ-->
+      <div class="swiper-slide blue-slide swiper-slide-active" style="width: 720px;">
+        <div class="fivetab-box">
+          <div class="banner-bar">
+            <a target="_blank" href="https://sy.66-00349.shop/r/ijnw//">
+              <img src="./1haocaipiaoappxiazai.gif"></a>
+          </div>
+          <div class="down-bar">
+            <div class="down-bar-boxt">
+              <div class="down-bar-boxt-1">
+                <img src="./1haocaipiaoxiaotu.jpg">
+              </div>
+              <div class="down-bar-boxt-2">
+                <div class="down-bar-boxt-2l">
+                  <ul>
+                    <li>
+                      <strong>1�Ų�ƱAPP</strong>
+                    </li>
+                    <li>��Ȩ��������</li>
+                    <li>��С��10.49MB</li>
+                    <li>��Դ��1�Ų�Ʊ</li>
+                    <li>������Android/iOS</li>
+                  </ul>
+                </div>
+                <div class="down-bar-boxt-2r">
+                  <ul>
+                    <li>ȫ��������ѡ��Ʊ���</li>
+                    <li>���ͣ��������</li>
+                    <li>�Ǽ���
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                    </li>
+                    <li>����ʱ�䣺2023.09.05</li>
+                    <li>���֣�9.9</li>
+                  </ul>
+                </div>
+                <div class="down-bar-rz">
+                  <img src="./xinyu.png">����վѺ��1�ڣ����ҷ���Ͷע��
+                </div>
+              </div>
+            </div>
+            <div class="down-bar-boxf">
+              <div class="down-bar-boxf-1">
+                <a href="https://020314050.shop:8089/999.html" target="_blank">
+                  <img src="./android.png">Android��</a>
+              </div>
+              <div class="down-bar-boxf-2">
+                <a href="https://020314050.shop:8089/999.html" target="_blank">
+                  <img src="./iphone.png">iPhone��</a>
+              </div>
+              <div class="down-bar-boxf-3">
+                <a href="https://sy.66-00349.shop/r/ijnw//" target="_blank">
+                  <img src="./guanfang.png">���ʹ���</a>
+              </div>
+            </div>
+          </div>
+		  <a target="_blank" href="https://sy.66-00349.shop/r/ijnw/"><img src="./quanchengdanbao.gif" style="width: 100%; height: auto;"></a>
+        </div>
+      </div>
+      <!--1�Ų�Ʊ-->
+      <!--���Ų�Ʊ-->
+      <div class="swiper-slide blue-slide swiper-slide-next" style="width: 720px;">
+        <div class="fivetab-box">
+          <div class="banner-bar">
+            <a target="_blank" href="https://yadg.13-10594.shop/">
+              <img src="./aomencaipiaoappxiazai.gif"></a>
+          </div>
+          <div class="down-bar">
+            <div class="down-bar-boxt">
+              <div class="down-bar-boxt-1">
+                <img src="./aomencaipiaoxiaotu.jpg">
+              </div>
+              <div class="down-bar-boxt-2">
+                <div class="down-bar-boxt-2l">
+                  <ul>
+                    <li>
+                      <strong>���Ų�ƱAPP</strong>
+                    </li>
+                    <li>��Ȩ��������</li>
+                    <li>��С��10.49MB</li>
+                    <li>��Դ�����Ų�Ʊ</li>
+                    <li>������Android/iOS</li>
+                  </ul>
+                </div>
+                <div class="down-bar-boxt-2r">
+                  <ul>
+                    <li>ȫ��������ѡ��Ʊ���</li>
+                    <li>���ͣ��������</li>
+                    <li>�Ǽ���
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                    </li>
+                    <li>����ʱ�䣺2023.09.05</li>
+                    <li>���֣�9.9</li>
+                  </ul>
+                </div>
+                <div class="down-bar-rz">
+                  <img src="./xinyu.png">����վѺ��1�ڣ����ҷ���Ͷע��
+                </div>
+              </div>
+            </div>
+            <div class="down-bar-boxf">
+              <div class="down-bar-boxf-1">
+                <a href="https://65432.app/" target="_blank">
+                  <img src="./android.png">Android��</a>
+              </div>
+              <div class="down-bar-boxf-2">
+                <a href="https://65432.app/" target="_blank">
+                  <img src="./iphone.png">iPhone��</a>
+              </div>
+              <div class="down-bar-boxf-3">
+                <a href="https://yadg.13-10594.shop/" target="_blank">
+                  <img src="./guanfang.png">���ʹ���</a>
+              </div>
+            </div>
+          </div>
+		  <a target="_blank" href="https://yadg.13-10594.shop/"><img src="./quanchengdanbao.gif" style="width: 100%; height: auto;"></a>
+        </div>
+      </div>
+      <!--���Ų�Ʊ-->
+      <!--�ʹ�����-->
+      <div class="swiper-slide blue-slide" style="width: 720px;">
+        <div class="fivetab-box">
+          <div class="banner-bar">
+            <a target="_blank" href="http://hg2.a70912.shop/">
+              <img src="./huangguantiyuappxiazai.gif"></a>
+          </div>
+          <div class="down-bar">
+            <div class="down-bar-boxt">
+              <div class="down-bar-boxt-1">
+                <img src="./huangguantiyuappxiazai.png">
+              </div>
+              <div class="down-bar-boxt-2">
+                <div class="down-bar-boxt-2l">
+                  <ul>
+                    <li>
+                      <strong>�ʹ�����APP</strong>
+                    </li>
+                    <li>��Ȩ��������</li>
+                    <li>��С��10.49MB</li>
+                    <li>��Դ���ʹ�����</li>
+                    <li>������Android/iOS</li>
+                  </ul>
+                </div>
+                <div class="down-bar-boxt-2r">
+                  <ul>
+                    <li>ȫ��������ѡ��Ʊ���</li>
+                    <li>���ͣ��������</li>
+                    <li>�Ǽ���
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                      <img src="./xingxing.jpg">
+                    </li>
+                    <li>����ʱ�䣺2023.09.05</li>
+                    <li>���֣�9.9</li>
+                  </ul>
+                </div>
+                <div class="down-bar-rz">
+                  <img src="./xinyu.png">����վѺ��1�ڣ����ҷ���Ͷע��
+                </div>
+              </div>
+            </div>
+            <div class="down-bar-boxf">
+              <div class="down-bar-boxf-1">
+                <a href="https://hgty1.app/" target="_blank">
+                  <img src="./android.png">Android��</a>
+              </div>
+              <div class="down-bar-boxf-2">
+                <a href="https://hgty1.app/" target="_blank">
+                  <img src="./iphone.png">iPhone��</a>
+              </div>
+              <div class="down-bar-boxf-3">
+                <a href="http://hg2.a70912.shop/" target="_blank">
+                  <img src="./guanfang.png">���ʹ���</a>
+              </div>
+            </div>
+          </div>
+		  <a target="_blank" href="http://hg2.a70912.shop/"><img src="./quanchengdanbao.gif" style="width: 100%; height: auto;"></a>
+        </div>
+      </div>
+      <!--�ʹ�����-->
+    </div>
+  <span class="swiper-notification" aria-live="assertive" aria-atomic="true"></span></div>
+</div>
+<script src="./fivetab1.js.����"></script>
+<script src="./fivetab2.js.����"></script></body></html>

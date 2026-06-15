@@ -1,0 +1,445 @@
+@charset "gb2312";
+
+
+
+/* CSS Document */
+
+
+
+html, body {
+
+
+
+    font-family: 'Microsoft YaHei', Arial, Helvetica, sans-serif;
+
+
+
+    background: url(/skin/jdbbg.png) repeat;
+
+
+
+    color: #444;
+
+
+
+    font: 14px/1.5 tahoma,"\5FAE\8F6F\96C5\9ED1","\5B8B\4F53",arial,georgia,verdana,helvetica,sans-serif;
+
+
+
+}
+
+
+
+body{
+
+
+
+    width: 100%;
+
+
+
+    max-width: 720px;
+
+
+
+    margin:0 auto;
+
+
+
+}
+
+
+
+
+
+
+
+* {
+
+
+
+    padding: 0;
+
+
+
+    
+
+
+
+    border: 0;
+
+
+
+
+
+
+
+    -webkit-box-sizing: border-box;
+
+
+
+    -moz-box-sizing: border-box;
+
+
+
+    box-sizing: border-box; 
+
+
+
+}
+
+
+
+
+
+
+
+ol, ul {
+
+
+
+    list-style: none;
+
+
+
+}
+
+
+
+
+
+
+
+h1, h2, h3, h4, h5, h6 {
+
+
+
+    font-size: 100%;
+
+
+
+}
+
+
+
+a{
+
+
+
+    color: #444;
+
+
+
+}
+
+
+
+a:link {
+
+
+
+    text-decoration: none;
+
+
+
+}
+
+
+
+
+
+
+
+a:visited {
+
+
+
+    text-decoration: none;
+
+
+
+}
+
+
+
+
+
+
+
+a:hover {
+
+
+
+    position: relative;
+
+
+
+    left: 1px;
+
+
+
+    top: 1px;
+
+
+
+    text-decoration: underline;
+
+
+
+}
+
+
+
+
+
+
+
+a:active {
+
+
+
+    text-decoration: none;
+
+
+
+}
+
+
+
+
+
+
+
+a:focus {
+
+
+
+    outline: none;
+
+
+
+}
+
+
+
+
+
+
+
+a.hidefocus {
+
+
+
+    outline: none
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+input[type=text], input[type=button], input[type=submit] {
+
+
+
+    -webkit-appearance: none;
+
+
+
+    outline: none;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+button {
+
+
+
+    border: 0;
+
+
+
+    outline: none;
+
+
+
+    cursor: pointer;
+
+
+
+}
+
+
+
+input{outline:none}
+
+
+
+
+
+
+
+.clearfix:before, .clearfix:after {
+
+
+
+    content: "";
+
+
+
+    display: table;
+
+
+
+}
+
+
+
+.clearfix:after {
+
+
+
+    clear: both;
+
+
+
+}
+
+
+
+.center{
+
+
+
+    text-align: center;
+
+
+
+}
+
+
+
+.pad{
+
+
+
+    padding:2px;
+
+
+
+}
+
+
+
+table {
+
+
+
+    width: 100%;
+
+
+
+}
+
+
+
+table td {
+
+
+
+    border: 1px solid #e5e5e5;
+
+
+
+    padding: 3px 2px;
+
+
+
+    word-break: break-all;
+
+
+
+}
+
+
+
+table td a{
+
+
+
+    height: 100%;
+
+
+
+}
+
+
+
+
+
+
+
+.f14{
+
+
+
+    font-size: 14pt;
+
+
+
+}
+
+
+
+.f13{
+
+
+
+    font-size: 13pt;
+
+
+
+}
+
+
+
+.f12{
+
+
+
+    font-size: 12pt;
+
+
+
+}

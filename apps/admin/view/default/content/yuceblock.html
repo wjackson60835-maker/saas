@@ -1,0 +1,126 @@
+{include file='common/head.html'}
+
+<div class="layui-body">
+	<div class="layui-tab layui-tab-brief" lay-filter="tab">
+	  <ul class="layui-tab-title">
+	    <li class="layui-this" lay-id="t1">开奖预测区块（添加 / 修改 / 删除）</li>
+	    <li lay-id="t2"><a href="{url./admin/YuceBlock/add}">添加</a></li>
+	  </ul>
+	  <div class="layui-tab-content">
+	  	<div class="layui-tab-item layui-show">
+
+	  		{if([$sort_missing])}
+	  		<blockquote class="layui-elem-quote layui-quote-nm" style="margin-bottom:15px;">
+	  			未找到栏目编码 <strong>{$scode}</strong>（当前区域）。请先执行 <code>doc/yuce_block_install.sql</code> 或在「内容栏目」中创建对应栏目。
+	  		</blockquote>
+	  		{/if}
+
+	  		{if([$sort])}
+	  		<fieldset class="layui-elem-field layui-field-title" style="margin-top:0;">
+			  <legend>全局设置</legend>
+			</fieldset>
+	  		<form action="{url./admin/YuceBlock/saveSettings}" method="post" class="layui-form" style="margin-bottom:25px;">
+	  			<input type="hidden" name="formcheck" value="{$formcheck}" >
+	  			<div class="layui-form-item">
+	  				<label class="layui-form-label">栏目编码</label>
+	  				<div class="layui-input-block">
+	  					<input type="text" name="cfg_scode" value="{$cfg_scode}" class="layui-input" style="max-width:320px;" placeholder="与 ay_content_sort.scode 一致">
+	  					<div class="layui-form-mid layui-word-aux">写入 config/yuce_block.php，须与数据库栏目存在且一致。</div>
+	  				</div>
+	  			</div>
+	  			<div class="layui-form-item">
+	  				<label class="layui-form-label">兜底品牌</label>
+	  				<div class="layui-input-block">
+	  					<input type="text" name="cfg_brand" value="{$cfg_brand}" class="layui-input" style="max-width:320px;" placeholder="快乐天天彩">
+	  					<div class="layui-form-mid layui-word-aux">仅当某条未填「主标题黄字」时使用；栏目描述1 非空时仍优先于本项。</div>
+	  				</div>
+	  			</div>
+	  			<div class="layui-form-item layui-form-text">
+	  				<label class="layui-form-label">栏目描述1</label>
+	  				<div class="layui-input-block">
+	  					<input type="text" name="sort_def1" value="{$sort->def1}" class="layui-input" style="max-width:480px;" placeholder="整栏默认黄字前缀，如：快乐天天彩">
+	  					<div class="layui-form-mid layui-word-aux">ay_content_sort.def1；单条可在编辑里填「主标题黄字」覆盖。</div>
+	  				</div>
+	  			</div>
+	  			<div class="layui-form-item">
+	  				<div class="layui-input-block">
+	  					<button type="submit" class="layui-btn">保存全局设置</button>
+	  				</div>
+	  			</div>
+	  		</form>
+	  		{/if}
+
+	  		<fieldset class="layui-elem-field layui-field-title">
+			  <legend>区块列表</legend>
+			</fieldset>
+			<p style="margin:0 0 12px 0;">
+				{fun=get_btn_add('添加')}
+				<span class="layui-word-aux" style="margin-left:12px;">列表内可「修改」「删除」单条；改排序后点「保存排序」。</span>
+			</p>
+	  		<form action="{url./admin/YuceBlock/saveSort}" method="post" class="layui-form" onkeydown="if(event.keyCode==13) return false;">
+		   	 <input type="hidden" name="formcheck" value="{$formcheck}" >
+	  		<table class="layui-table">
+	  			<thead>
+                    <tr>
+                        <th>排序</th>
+                        <th>黄字前缀</th>
+                        <th>标题（绿字）</th>
+                        <th title="留空保存后自动生成 yuce_blk+ID">容器ID</th>
+                        <th>副行</th>
+                        <th>发布/定时</th>
+                        <th>状态</th>
+                        <th style="min-width:140px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach $items(key,value)}
+                    <tr>
+                        <td class="table-input" style="width:90px;">
+                        	<input type="hidden" name="listall[]" value="[value->id]">
+                        	<input type="text" lay-ignore class="layui-input" name="sorting[]" value="[value->sorting]">
+                        </td>
+                        <td class="layui-word-aux" title="空=走栏目/兜底默认">[value->source]</td>
+                        <td title="[value->title]">[value->title]</td>
+                        <td><code>[value->subtitle]</code></td>
+                        <td>{if($value->keywords=='1')}是{else}否{/if}</td>
+                        <td style="white-space:nowrap;font-size:12px;">[value->date]
+                        {if($value->date > date('Y-m-d H:i:s'))}
+                        <span class="layui-badge layui-bg-cyan">待发布</span>
+                        {/if}
+                        </td>
+                        <td>
+                        {if($value->status)}
+	                        <a href="{url./admin/YuceBlock/mod/id/'.$value->id.'/field/status/value/0}" class="switch"><i class='fa fa-toggle-on' title="点击关闭"></i></a>
+	                        {else}
+	                        <a href="{url./admin/YuceBlock/mod/id/'.$value->id.'/field/status/value/1}" class="switch"><i class='fa fa-toggle-off' title="点击开启"></i></a>
+	                    {/if}
+                        </td>
+                        <td>
+                            {if(check_level('mod'))}
+                            <a href="{url./admin/YuceBlock/mod/id/'.$value->id.'}" class="layui-btn layui-btn-xs">修改</a>
+                            {/if}
+                            {if(check_level('del'))}
+                            <a href="{url./admin/YuceBlock/del/id/'.$value->id.'}" onclick="return confirm('确定删除该条？');" class="layui-btn layui-btn-xs layui-btn-danger">删除</a>
+                            {/if}
+                            {if(!check_level('mod') && !check_level('del'))}
+                            <span class="layui-word-aux">无操作权限</span>
+                            {/if}
+                        </td>
+                    </tr>
+                    {/foreach}
+                </tbody>
+	  		</table>
+	  		{if([$items_count]>0)}
+	  		 <button type="submit" class="layui-btn layui-btn-sm">保存排序</button>
+	  		{/if}
+            </form>
+
+	  		{if([$items_count]==0 && ![$sort_missing])}
+	  		<p class="layui-word-aux">暂无数据，请点击「添加」或顶部「添加」选项卡。</p>
+	  		{/if}
+
+	  	</div>
+	  </div>
+	</div>
+</div>
+{include file='common/foot.html'}

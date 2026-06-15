@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据收集后台</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6fa; margin: 0; padding: 20px; }
+    .wrap { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 18px; }
+    h2 { margin-top: 0; }
+    .row { margin-bottom: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    input, button, select { font-size: 14px; padding: 7px; border-radius: 4px; border: 1px solid #d9d9d9; }
+    button { cursor: pointer; background: #1677ff; color: #fff; border: 0; }
+    button.gray { background: #666; }
+    .status { margin: 10px 0; padding: 8px; border-radius: 4px; background: #f0f6ff; color: #1d4f9a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #eee; padding: 8px; text-align: left; font-size: 13px; }
+    th { background: #fafafa; }
+    .section { border: 1px solid #f0f0f0; border-radius: 8px; margin-top: 14px; padding: 12px; }
+    .hidden { display: none; }
+    .agent-tree-backdrop { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
+    .agent-tree-backdrop.open { display: flex; }
+    .agent-tree-panel { background: #fff; border-radius: 10px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto; padding: 16px; box-shadow: 0 8px 32px rgba(0,0,0,.18); }
+    .agent-add-modal-backdrop { position: fixed; inset: 0; z-index: 10050; background: rgba(0,0,0,.4); display: none; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
+    .agent-add-modal-backdrop.open { display: flex; }
+    .agent-add-modal-box { background: #fff; border-radius: 10px; padding: 16px 18px; min-width: 300px; max-width: 420px; width: 100%; box-shadow: 0 8px 28px rgba(0,0,0,.2); }
+
+    /* 特码 / 平码 选项卡 */
+    .admin-scope-tabs {
+      display: flex; gap: 0; margin: 0 0 12px;
+      border-bottom: 2px solid #e8e8e8;
+    }
+    .admin-scope-tab {
+      appearance: none; background: transparent; color: #666;
+      border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; padding: 9px 16px; font-size: 14px; font-weight: 600;
+      cursor: pointer; border-radius: 6px 6px 0 0;
+    }
+    .admin-scope-tab:hover { color: #1677ff; background: #f5f9ff; }
+    .admin-scope-tab.active {
+      color: #1677ff; background: #f0f6ff;
+      border-bottom-color: #1677ff;
+    }
+    .admin-scope-badge {
+      display: inline-block; margin-left: 5px; padding: 1px 6px;
+      font-size: 11px; font-weight: 500; border-radius: 10px;
+    }
+    .admin-scope-tab[data-scope="tema"] .admin-scope-badge { background: #fff7e6; color: #ad6800; }
+    .admin-scope-tab[data-scope="pingma"] .admin-scope-badge { background: #e6f4ff; color: #0958d9; }
+    .scope-hint { font-size: 13px; color: #666; margin: 6px 0 10px; line-height: 1.6; }
+    .scope-hint--pingma { color: #0958d9; background: #f0f6ff; border: 1px solid #d6e4ff; border-radius: 6px; padding: 8px 10px; }
+    .scope-hint--tema { color: #666; }
+    #temaBreakdownSection.hidden-pingma { display: none; }
+    .ball-scope-tag { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 12px; }
+    .ball-scope-tag--tema { background: #fff7e6; color: #ad6800; }
+    .ball-scope-tag--pingma { background: #e6f4ff; color: #0958d9; }
+    .pingma-formatted { white-space: pre-line; line-height: 1.55; font-size: 12px; }
+    .pingma-sel-cell {
+      font-size: 12px; line-height: 1.5; max-width: 420px;
+      word-break: break-word; white-space: normal; vertical-align: top;
+    }
+    .pingma-miss-box {
+      font-size: 12px; line-height: 1.55; color: #333;
+      background: #fffbe6; border: 1px solid #ffe58f; border-radius: 6px;
+      padding: 8px 10px; margin: 0; white-space: pre-wrap; word-break: break-word;
+      max-height: 200px; overflow: auto;
+    }
+    .pingma-miss-box--ok { background: #f6ffed; border-color: #b7eb8f; color: #237804; }
+    .pingma-payout-box {
+      background: #f0f6ff; border: 1px solid #d6e4ff; border-radius: 6px;
+      padding: 10px 12px; margin: 0 0 12px; font-size: 13px; line-height: 1.6;
+    }
+    .pingma-payout-kpi { display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 8px 0 0; }
+    .pingma-payout-kpi span strong { font-size: 15px; }
+    .pingma-payout-kpi .neg { color: #cf1322; }
+    .pingma-payout-kpi .pos { color: #237804; }
+    .pingma-payout-hit { color: #0958d9; font-size: 12px; }
+    .pingma-payout-total-row { font-weight: 600; background: #fafafa; }
+    .pingma-payout-total-row td { border-top: 2px solid #e8e8e8 !important; }
+    .neg { color: #cf1322; }
+    .pos { color: #237804; }
+    .pingma-payout-box--profit {
+      background: #f6ffed; border-color: #b7eb8f; margin-top: 12px;
+    }
+    .pingma-payout-box--profit strong { color: #237804; }
+    .pingma-recommend-balls {
+      display: inline-block; font-size: 20px; font-weight: 700;
+      line-height: 1.7; letter-spacing: 0.5px; vertical-align: middle;
+    }
+    .pingma-recommend-ball { white-space: nowrap; }
+    .pingma-recommend-meta { font-weight: 700; }
+    .pingma-recommend-sep { font-weight: 700; }
+    .pingma-wave {
+      display: inline-block; padding: 0 5px; border-radius: 3px;
+      font-weight: 800; line-height: 1.35; color: #fff;
+    }
+    .pingma-wave--红 { background-color: rgb(255, 0, 0); }
+    .pingma-wave--蓝 { background-color: rgb(0, 0, 255); }
+    .pingma-wave--绿 { background-color: rgb(0, 153, 0); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>数据收集后台管理</h2>
+    <div id="status" class="status">正在验证后台管理员登录状态...</div>
+
+    <div id="loginBox" class="row hidden"></div>
+
+    <div id="mainBox" class="hidden">
+      <div class="section">
+        <h3>提交开关与封盘时段</h3>
+        <div class="row">
+          <label><input id="submitEnabled" type="checkbox"> 允许提交</label>
+        </div>
+        <div class="row">
+          <label for="defaultPeriodNo">默认期号</label>
+          <input id="defaultPeriodNo" type="text" maxlength="32" style="width:200px;" placeholder="如 2026099，留空则自动推算">
+          <span style="color:#666;font-size:12px;">用户提交页默认期号；非空则不再按开奖表推算</span>
+        </div>
+        <div class="row">
+          <label for="pingmaTargetProfitPct">推荐目标盈利率</label>
+          <input id="pingmaTargetProfitPct" type="number" min="1" max="99" step="1" value="70" style="width:100px;">
+          <span style="color:#666;font-size:12px;">%（平码推荐算法目标盈利率，可设 70、80、90 等）</span>
+        </div>
+        <div class="row">
+          <label for="pingmaRecommendCount">推荐方案数量</label>
+          <input id="pingmaRecommendCount" type="number" min="1" max="5" step="1" value="3" style="width:100px;">
+          <span style="color:#666;font-size:12px;">套（每次平码推荐几组 6 码，1–5，默认 3）</span>
+        </div>
+        <div class="row">
+          <input id="startTime" type="text" placeholder="开始时间 HH:mm 例 21:20">
+          <input id="endTime" type="text" placeholder="结束时间 HH:mm 例 21:50">
+          <button id="btnAddWindow">添加时段</button>
+        </div>
+        <table>
+          <thead><tr><th>开始</th><th>结束</th><th>启用</th><th>操作</th></tr></thead>
+          <tbody id="windowBody"></tbody>
+        </table>
+        <div class="row"><button id="btnSaveSettings">保存设置</button></div>
+      </div>
+
+      <div class="section">
+        <h3>秘钥管理（给用户登录使用）</h3>
+        <div class="row">
+          <input id="newKeyName" type="text" placeholder="渠道名称，如 A代理">
+          <input id="newKeyPassword" type="text" placeholder="秘钥密码">
+          <label><input id="newKeyEnabled" type="checkbox" checked> 启用</label>
+          <button id="btnAddPasskey">新增秘钥</button>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>渠道名称</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+          <tbody id="passkeyBody"></tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <h3>渠道下属代理（后台维护；该渠道用户登录提交页可下拉选择，并能看到各代理累计收款）</h3>
+        <p style="color:#666;font-size:12px;margin:6px 0;">请先在下方「统计筛选」里选择渠道，再点「加载」；与用户在提交页「添加分销」共用数据表 <code>collect_distributors</code>。</p>
+        <div class="row">
+          <button type="button" id="btnLoadAgents">加载代理与收款汇总</button>
+          <input id="adminAgentName" type="text" maxlength="40" placeholder="新代理名称" style="width:200px;">
+          <input id="adminAgentPassword" type="password" maxlength="200" placeholder="代理密码≥4位" style="width:160px;" autocomplete="new-password">
+          <button type="button" id="btnAddAgent">添加代理到当前选中渠道</button>
+        </div>
+        <p style="color:#666;font-size:12px;margin:0 0 8px;">若库表已加 <code>pass_hash</code> 列，新建代理须填密码（至少4位，存哈希）；未执行密码迁移时可不填。</p>
+        <div id="agentSummary" style="margin:10px 0;font-size:13px;"></div>
+        <h4 style="margin:12px 0 6px;font-size:14px;">各代理累计收款（按提交单归属）</h4>
+        <table>
+          <thead><tr><th>代理归属名</th><th>累计金额</th><th>提交单数</th></tr></thead>
+          <tbody id="agentAggBody"></tbody>
+        </table>
+        <h4 style="margin:16px 0 6px;font-size:14px;">已登记代理（可删除登记；不影响历史提交快照）</h4>
+        <table>
+          <thead><tr><th>ID</th><th>名称</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+          <tbody id="agentRegBody"></tbody>
+        </table>
+      </div>
+
+      <div class="section" id="dataViewSection">
+        <h3 id="dataViewTitle">特码板块</h3>
+        <div class="admin-scope-tabs" role="tablist" aria-label="数据板块">
+          <button type="button" class="admin-scope-tab active" role="tab" id="adminTabTema" data-scope="tema" aria-selected="true">
+            特码<span class="admin-scope-badge">各号/各肖</span>
+          </button>
+          <button type="button" class="admin-scope-tab" role="tab" id="adminTabPingma" data-scope="pingma" aria-selected="false">
+            平码<span class="admin-scope-badge">复式/连肖</span>
+          </button>
+        </div>
+        <h4 style="margin:0 0 8px;font-size:14px;color:#333;">统计筛选</h4>
+        <div class="row">
+          <input id="periodNo" type="text" placeholder="期号（如 2026278，或 8 位开奖日期自动换算）">
+          <input id="channelNameFilter" type="text" maxlength="64" style="width:160px;" placeholder="渠道名称（可模糊）" title="有输入时优先按名称模糊匹配">
+          <select id="passIdFilter" style="min-width:180px;" title="按渠道筛选；名称框有内容时不用此项">
+            <option value="">全部渠道</option>
+          </select>
+          <input id="startDate" type="date">
+          <input id="endDate" type="date">
+          <button id="btnLoadStats">查询统计</button>
+        </div>
+        <div id="scopeHint" class="scope-hint scope-hint--tema">
+          当前查看 <strong>特码</strong> 提交：号码/尾数排行、正码与特号拆分（历史正码多为 <code>is_special=0</code>）。
+        </div>
+        <div id="overview"></div>
+        <p id="statsTipsTema" class="tips" style="margin:6px 0 10px;color:#666;font-size:13px;">
+          说明：<strong>全部</strong>表 = 每个号码/每条尾数的总金额（正码+特号合并看分布）。下面「尾数」指号码<strong>末位数字</strong>。拆分明细里「正码」多为历史数据（<code>is_special=0</code>）；新提交明细多为特号。
+        </p>
+        <p id="statsTipsPingma" class="tips hidden" style="margin:6px 0 10px;color:#666;font-size:13px;">
+          说明：<strong>平码</strong>区按玩法汇总（二中二/三中三/连肖等），金额为按组计费合计；下方「未买覆盖」列出筛选范围内<strong>没有</strong>出现在任何平码提交中的球号与生肖（肖类已展开为对应球号一并计入已买号码）；「购买热度」按明细选号/选肖出现次数从高到低排序。
+        </p>
+        <div id="temaStatsBlock">
+        <p id="statsTipsTema" class="tips" style="margin:6px 0 10px;color:#666;font-size:13px;">
+          说明：号码金额统计为各号下注合计；下方列出<strong>未买号码</strong>（01–49）。若全部号码均有购买，则按<strong>购买金额升序</strong>排列。
+        </p>
+        <h4 style="margin-top:0;">未买号码（特码 · 01–49）</h4>
+        <div id="temaUnboughtSection" class="row" style="align-items:flex-start;">
+          <div style="flex:1;min-width:280px;">
+            <h5 id="temaBoughtNumsTitle" style="margin:0 0 6px;font-size:13px;color:#333;">已买号码</h5>
+            <pre id="temaBoughtNums" class="pingma-miss-box pingma-miss-box--ok">—</pre>
+            <h5 id="temaUnboughtNumsTitle" style="margin:12px 0 6px;font-size:13px;color:#333;">未买号码</h5>
+            <pre id="temaUnboughtNums" class="pingma-miss-box">—</pre>
+          </div>
+        </div>
+        <div id="temaAllBoughtSection" class="hidden">
+          <h4 id="temaAllBoughtTitle" style="margin:0 0 8px;font-size:14px;color:#333;">全部号码已覆盖 · 购买金额升序</h4>
+          <table>
+            <thead><tr><th>#</th><th>号码</th><th>总金额 ↑</th><th>条目数</th></tr></thead>
+            <tbody id="temaRankAscBody"></tbody>
+          </table>
+        </div>
+        <div class="row" style="align-items:flex-start;margin-top:16px;">
+          <div style="flex:1;min-width:240px">
+            <h4 id="numAllTitle">全部 · 号码金额排行（正码+特号合计）</h4>
+            <table>
+              <thead><tr><th>号码</th><th>总金额</th><th>条目数</th></tr></thead>
+              <tbody id="numBodyAll"></tbody>
+            </table>
+          </div>
+          <div style="flex:1;min-width:240px">
+            <h4 id="tailAllTitle">全部 · 尾数金额排行（正码+特号合计）</h4>
+            <table>
+              <thead><tr><th>尾数</th><th>总金额</th><th>条目数</th></tr></thead>
+              <tbody id="tailBodyAll"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="temaBreakdownSection">
+          <h4 style="margin-top:16px;color:#333;">拆分明细（正码≈历史）</h4>
+          <div class="row" style="align-items:flex-start;">
+            <div style="flex:1;min-width:240px">
+              <h4>号码金额统计<span style="font-weight:400;color:#888;font-size:12px;margin-left:6px;">（正码+特号合计，按总金额）</span></h4>
+              <table>
+                <thead><tr><th>号码</th><th>总金额 ↓</th><th>条目数</th></tr></thead>
+                <tbody id="numBodyNormal"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="row" style="align-items:flex-start;">
+            <div style="flex:1;min-width:240px">
+              <h4>正码 · 尾数金额排行</h4>
+              <table>
+                <thead><tr><th>尾数</th><th>总金额</th><th>条目数</th></tr></thead>
+                <tbody id="tailBodyNormal"></tbody>
+              </table>
+            </div>
+            <div style="flex:1;min-width:240px">
+              <h4>特号 · 尾数金额排行</h4>
+              <table>
+                <thead><tr><th>尾数</th><th>总金额</th><th>条目数</th></tr></thead>
+                <tbody id="tailBodySpecial"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        </div>
+        <div id="pingmaStatsBlock" class="hidden">
+          <div id="pingmaStatsWarn" class="scope-hint scope-hint--pingma hidden" style="margin-bottom:10px;"></div>
+          <h4>平码赔率统计</h4>
+          <div id="pingmaPayoutOverview" class="pingma-payout-box">—</div>
+          <div id="pingmaRecommendDraw" class="pingma-payout-box pingma-payout-box--profit hidden"></div>
+          <table>
+            <thead><tr><th>玩法</th><th>类型</th><th>选号/选肖</th><th>全部球号</th><th>赔率</th><th>笔数</th><th>总组数</th><th>中组数</th><th>下注合计</th><th>派彩合计</th><th>庄家盈亏</th></tr></thead>
+            <tbody id="pingmaPayoutByPlayBody"></tbody>
+          </table>
+          <h5 style="margin:14px 0 8px;font-size:13px;color:#333;">逐条派彩明细</h5>
+          <p id="pingmaPayoutRowsHint" style="margin:0 0 8px;color:#666;font-size:12px;"></p>
+          <table>
+            <thead><tr><th>ID</th><th>内容</th><th>组数</th><th>中组</th><th>每组</th><th>下注</th><th>赔率</th><th>中1组赔</th><th>派彩</th><th>盈亏</th><th>中奖组合（含球号）</th><th>对应球号</th><th>期号</th><th>渠道</th></tr></thead>
+            <tbody id="pingmaPayoutRowsBody"></tbody>
+          </table>
+          <h4 style="margin-top:20px;">按玩法汇总（下注）</h4>
+          <table>
+            <thead><tr><th>玩法</th><th>类型</th><th>选号/选肖</th><th>全部球号</th><th>笔数</th><th>总组数</th><th>总金额</th></tr></thead>
+            <tbody id="playTypeBody"></tbody>
+          </table>
+          <h4 style="margin-top:16px;">未买覆盖（相对 01–49 全号 / 十二生肖）</h4>
+          <div class="row" style="align-items:flex-start;">
+            <div style="flex:1;min-width:280px;">
+              <h5 id="pingmaBoughtNumsTitle" style="margin:0 0 6px;font-size:13px;color:#333;">已买号码</h5>
+              <pre id="pingmaBoughtNums" class="pingma-miss-box pingma-miss-box--ok">—</pre>
+              <h5 id="pingmaUnboughtNumsTitle" style="margin:12px 0 6px;font-size:13px;color:#333;">未买号码</h5>
+              <pre id="pingmaUnboughtNums" class="pingma-miss-box">—</pre>
+            </div>
+            <div style="flex:1;min-width:280px;">
+              <h5 id="pingmaBoughtZodiacTitle" style="margin:0 0 6px;font-size:13px;color:#333;">已买生肖</h5>
+              <pre id="pingmaBoughtZodiacs" class="pingma-miss-box pingma-miss-box--ok">—</pre>
+              <h5 id="pingmaUnboughtZodiacTitle" style="margin:12px 0 6px;font-size:13px;color:#333;">未买生肖（含对应球号）</h5>
+              <table>
+                <thead><tr><th>生肖</th><th>对应球号（未买）</th></tr></thead>
+                <tbody id="pingmaUnboughtZodiacBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <h4 style="margin-top:16px;">购买热度排行（出现次数从高到低）</h4>
+          <p style="margin:0 0 10px;color:#666;font-size:13px;">统计筛选范围内平码明细：每条提交的选号/选肖各计 1 次；肖类提交会将其对应球号一并计入号码次数。</p>
+          <div class="row" style="align-items:flex-start;">
+            <div style="flex:1;min-width:280px;">
+              <h5 style="margin:0 0 6px;font-size:13px;color:#333;">号码 · 买得最多</h5>
+              <table>
+                <thead><tr><th>#</th><th>号码</th><th>购买的次数</th><th>玩法</th></tr></thead>
+                <tbody id="pingmaNumberRankBody"></tbody>
+              </table>
+            </div>
+            <div style="flex:1;min-width:280px;">
+              <h5 style="margin:0 0 6px;font-size:13px;color:#333;">生肖 · 买得最多</h5>
+              <table>
+                <thead><tr><th>#</th><th>生肖</th><th>购买的次数</th><th>玩法</th></tr></thead>
+                <tbody id="pingmaZodiacRankBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <h4 style="margin-top:16px;">平码明细（最近 100 条）</h4>
+          <table>
+            <thead><tr><th>ID</th><th>格式化内容</th><th>选号/选肖</th><th>球号</th><th>组数</th><th>每组</th><th>合计</th><th>期号</th><th>渠道</th><th>时间</th></tr></thead>
+              <tbody id="pingmaBetBody"></tbody>
+          </table>
+        </div>
+        <h4 style="margin-top:20px;">提交记录 <span id="listScopeLabel" style="font-weight:400;color:#666;font-size:13px;">（特码）</span></h4>
+        <div class="row">
+          <button id="btnLoadList">加载记录</button>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>类型</th><th>期号</th><th>渠道</th><th>金额</th><th>条目</th><th>时间</th><th>IP</th><th>原文</th></tr></thead>
+          <tbody id="listBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  <div id="collectAgentBackdrop" class="agent-tree-backdrop" aria-hidden="true">
+    <div class="agent-tree-panel" onclick="event.stopPropagation()">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 id="collectAgentDlgTitle2" style="margin:0;font-size:16px;">下级代理</h3>
+        <button type="button" id="collectAgentBackdropClose" class="gray">关闭</button>
+      </div>
+      <div id="collectAgentDlgBody2"></div>
+    </div>
+  </div>
+
+  <div id="agentAddPwBackdrop" class="agent-add-modal-backdrop" aria-hidden="true">
+    <div class="agent-add-modal-box" onclick="event.stopPropagation()">
+      <h4 id="agentAddPwTitle" style="margin:0 0 12px;font-size:15px;">添加代理</h4>
+      <div class="row" style="flex-direction:column;align-items:stretch;gap:10px;">
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;">名称
+          <input id="agentAddPwName" type="text" maxlength="40" style="width:100%;box-sizing:border-box;">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;">登录密码
+          <input id="agentAddPwPwd" type="password" maxlength="200" style="width:100%;box-sizing:border-box;" autocomplete="new-password">
+        </label>
+        <p id="agentAddPwHint" style="color:#888;font-size:12px;margin:0;line-height:1.45;"></p>
+      </div>
+      <div class="row" style="margin-top:14px;">
+        <button type="button" id="agentAddPwOk">确定</button>
+        <button type="button" id="agentAddPwCancel" class="gray">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const apiBase = '/ajax/collect/api.php';
+    const statusEl = document.getElementById('status');
+    const loginBox = document.getElementById('loginBox');
+    const mainBox = document.getElementById('mainBox');
+    let windows = [];
+    let passkeys = [];
+    const ADMIN_SCOPE_STORAGE_KEY = 'collect_admin_active_scope';
+    let activeAdminBallScope = 'tema';
+
+    const adminTabTemaEl = document.getElementById('adminTabTema');
+    const adminTabPingmaEl = document.getElementById('adminTabPingma');
+
+    function getAdminBallScope() {
+      return activeAdminBallScope === 'pingma' ? 'pingma' : 'tema';
+    }
+
+    function applyAdminScopeUi() {
+      const isTema = getAdminBallScope() === 'tema';
+      adminTabTemaEl.classList.toggle('active', isTema);
+      adminTabPingmaEl.classList.toggle('active', !isTema);
+      adminTabTemaEl.setAttribute('aria-selected', isTema ? 'true' : 'false');
+      adminTabPingmaEl.setAttribute('aria-selected', isTema ? 'false' : 'true');
+      document.getElementById('scopeHint').className = 'scope-hint ' + (isTema ? 'scope-hint--tema' : 'scope-hint--pingma');
+      document.getElementById('scopeHint').innerHTML = isTema
+        ? '当前查看 <strong>特码</strong> 提交：号码/尾数排行、正码与特号拆分（历史正码多为 <code>is_special=0</code>）。'
+        : '当前查看 <strong>平码</strong> 提交：仅含用户在提交页「平码」选项卡提交的单据（二中二/三中三/连肖等）。';
+      document.getElementById('statsTipsTema').classList.toggle('hidden', !isTema);
+      document.getElementById('statsTipsPingma').classList.toggle('hidden', isTema);
+      document.getElementById('temaStatsBlock').classList.toggle('hidden', !isTema);
+      document.getElementById('pingmaStatsBlock').classList.toggle('hidden', isTema);
+      document.getElementById('temaBreakdownSection').classList.toggle('hidden-pingma', !isTema);
+      document.getElementById('numAllTitle').textContent = isTema
+        ? '全部 · 号码金额排行（正码+特号合计）'
+        : '平码 · 号码金额排行';
+      document.getElementById('tailAllTitle').textContent = isTema
+        ? '全部 · 尾数金额排行（正码+特号合计）'
+        : '平码 · 尾数金额排行';
+      document.getElementById('listScopeLabel').textContent = '（' + (isTema ? '特码' : '平码') + '）';
+      document.getElementById('dataViewTitle').textContent = isTema ? '特码板块' : '平码板块';
+    }
+
+    let statsLoading = false;
+    async function reloadDataView() {
+      if (statsLoading) return;
+      statsLoading = true;
+      const btn = document.getElementById('btnLoadStats');
+      const btnLabel = btn ? btn.textContent : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '统计中…';
+      }
+      setStatus('正在加载统计，请稍候…');
+      try {
+        await loadStats();
+        await loadList();
+      } finally {
+        statsLoading = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = btnLabel || '查询统计';
+        }
+      }
+    }
+
+    function switchAdminScope(scope) {
+      activeAdminBallScope = scope === 'pingma' ? 'pingma' : 'tema';
+      try {
+        sessionStorage.setItem(ADMIN_SCOPE_STORAGE_KEY, activeAdminBallScope);
+      } catch (e) { /* ignore */ }
+      applyAdminScopeUi();
+    }
+
+    function restoreAdminScope() {
+      let saved = '';
+      try {
+        saved = sessionStorage.getItem(ADMIN_SCOPE_STORAGE_KEY) || '';
+      } catch (e) { /* ignore */ }
+      switchAdminScope(saved === 'pingma' ? 'pingma' : 'tema');
+    }
+
+    adminTabTemaEl.addEventListener('click', async () => {
+      if (getAdminBallScope() === 'tema') return;
+      switchAdminScope('tema');
+      try { await reloadDataView(); } catch (e) { setStatus(e.message); }
+    });
+    adminTabPingmaEl.addEventListener('click', async () => {
+      if (getAdminBallScope() === 'pingma') return;
+      switchAdminScope('pingma');
+      try { await reloadDataView(); } catch (e) { setStatus(e.message); }
+    });
+
+    function scopeTagHtml(scope) {
+      const isPingma = scope === 'pingma';
+      return '<span class="ball-scope-tag ball-scope-tag--' + (isPingma ? 'pingma' : 'tema') + '">'
+        + (isPingma ? '平码' : '特码') + '</span>';
+    }
+
+    function setStatus(msg) { statusEl.textContent = msg; }
+    function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function pingmaBallsFromRec(rec) {
+      rec = rec || {};
+      if (rec.ballsItems && rec.ballsItems.length) return rec.ballsItems;
+      const items = [];
+      const re = /(\d{2})\(([^/]+)\/([^)]+)\)/g;
+      let m;
+      const text = rec.ballsDisplay || '';
+      while ((m = re.exec(text)) !== null) {
+        items.push({ number: m[1], wave: m[2], zodiac: m[3] });
+      }
+      if (items.length) return items;
+      return (rec.zhengMa || []).map(n => ({ number: String(n), wave: '', zodiac: '' }));
+    }
+
+    function formatPingmaBallsHtml(balls) {
+      balls = balls || [];
+      if (!balls.length) return '';
+      return balls.map((b, i) => {
+        const num = esc(b.number || '');
+        const wave = String(b.wave || '');
+        const zodiac = esc(b.zodiac || '');
+        const sep = i < balls.length - 1 ? '<span class="pingma-recommend-sep">, </span>' : '';
+        if (!wave && !zodiac) {
+          return '<span class="pingma-recommend-ball">' + num + '</span>' + sep;
+        }
+        const waveHtml = wave
+          ? '<span class="pingma-wave pingma-wave--' + esc(wave) + '">' + esc(wave) + '</span>'
+          : '';
+        const meta = wave && zodiac
+          ? waveHtml + '<span class="pingma-recommend-slash">/</span>' + zodiac
+          : (waveHtml || zodiac);
+        return '<span class="pingma-recommend-ball">' + num +
+          '<span class="pingma-recommend-meta">(' + meta + ')</span></span>' + sep;
+      }).join('');
+    }
+
+    function fmtMoney(n) {
+      const v = Number(n || 0);
+      if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+      return v.toFixed(2).replace(/\.?0+$/, '');
+    }
+
+    let lastPingmaActualSummary = null;
+
+    function fmtProfitWord(n) {
+      const v = Number(n || 0);
+      if (v > 0.001) return '赚 <strong class="pos">' + fmtMoney(v) + '</strong>';
+      if (v < -0.001) return '亏 <strong class="neg">' + fmtMoney(Math.abs(v)) + '</strong>';
+      return '持平';
+    }
+
+    let pingmaRecommendLoading = false;
+    async function loadPingmaRecommend() {
+      if (getAdminBallScope() !== 'pingma' || pingmaRecommendLoading) return;
+      const el = document.getElementById('pingmaRecommendDraw');
+      if (!el) return;
+      pingmaRecommendLoading = true;
+      el.classList.remove('hidden');
+      delete el.dataset.recommendReady;
+      el.innerHTML = '<strong>推荐开奖（庄家盈利 · 模拟）</strong><br><span style="color:#888;">正在计算，请稍候…</span>';
+      try {
+        const data = await api('admin_pingma_recommend', adminFilterBody());
+        renderPingmaRecommendDraws(data);
+      } catch (e) {
+        el.innerHTML = '<strong>推荐开奖（庄家盈利）</strong><br><span style="color:#a8071a;">' + esc(e.message) + '</span>';
+      } finally {
+        pingmaRecommendLoading = false;
+      }
+    }
+
+    function renderPingmaRecommendDraws(payload) {
+      const el = document.getElementById('pingmaRecommendDraw');
+      if (!el) return;
+      payload = payload || {};
+      const draws = (payload.recommendedDraws && payload.recommendedDraws.length)
+        ? payload.recommendedDraws
+        : (payload.recommendedDraw ? [payload.recommendedDraw] : []);
+      if (!draws.length) {
+        el.classList.add('hidden');
+        el.innerHTML = '';
+        delete el.dataset.recommendReady;
+        return;
+      }
+      if (draws.length === 1 && !draws[0].available) {
+        renderPingmaRecommendDraw(draws[0]);
+        return;
+      }
+      el.classList.remove('hidden');
+      el.dataset.recommendReady = '1';
+      el.innerHTML = '<div style="font-weight:600;margin-bottom:8px;">推荐开奖（庄家盈利 · 模拟）</div>' + draws.map((rec, idx) => {
+        const rank = Number(rec.rank || (idx + 1));
+        const total = Number(rec.recommendTotal || draws.length);
+        const title = rank === 1 ? '方案 ' + rank + '（最优）' : '方案 ' + rank + '/' + total;
+        return '<div style="' + (rank > 1 ? 'margin-top:14px;padding-top:14px;border-top:1px dashed #d9e8f7;' : '') + '">' +
+          '<div style="font-weight:600;margin-bottom:6px;">' + esc(title) + '</div>' +
+          renderPingmaRecommendDrawInner(rec, rank === 1) +
+          '</div>';
+      }).join('');
+    }
+
+    function renderPingmaRecommendDraw(rec) {
+      const el = document.getElementById('pingmaRecommendDraw');
+      if (!el) return;
+      rec = rec || {};
+      if (!rec.available) {
+        if (rec.note) {
+          el.classList.remove('hidden');
+          el.innerHTML = '<strong>推荐开奖（庄家盈利）</strong><br><span style="color:#888;">' + esc(rec.note) + '</span>';
+        } else {
+          el.classList.add('hidden');
+          el.innerHTML = '';
+        }
+        return;
+      }
+      el.classList.remove('hidden');
+      el.dataset.recommendReady = '1';
+      el.innerHTML =
+        '<div style="font-weight:600;margin-bottom:6px;">推荐开奖（庄家盈利 · 模拟）</div>' +
+        renderPingmaRecommendDrawInner(rec, true);
+    }
+
+    function renderPingmaRecommendDrawInner(rec, showCompare) {
+      rec = rec || {};
+      const s = rec.summary || {};
+      const sw = rec.summaryWorst || {};
+      const stake = Number(s.stake || 0);
+      const payout = Number(s.payout || 0);
+      const net = Number(s.net_profit != null ? s.net_profit : (stake - payout));
+      const worstPayout = Number(sw.payout || 0);
+      const worstNet = Number(sw.net_profit != null ? sw.net_profit : (stake - worstPayout));
+      const profitRate = Number(rec.profitRate != null ? rec.profitRate : (stake > 0 ? Math.round(net / stake * 10000) / 100 : 0));
+      const targetRate = Number(rec.targetProfitRate || 70);
+      const meetsTarget = rec.meetsTarget != null ? !!rec.meetsTarget : profitRate >= targetRate;
+      const hitRows = s.hit_rows || [];
+      let hitHtml = '';
+      if (showCompare && hitRows.length) {
+        const hitPayoutPage = hitRows.reduce((sum, r) => sum + Number(r.payout || 0), 0);
+        const hitCountPage = hitRows.reduce((sum, r) => sum + Number(r.hit_count || 0), 0);
+        hitHtml =
+          '<div style="margin-top:10px;"><div style="font-weight:600;font-size:13px;margin-bottom:6px;">中奖明细（' +
+          esc(s.hit_group_count || 0) + ' 组 / ' + esc(s.hit_rows_total || hitRows.length) + ' 笔）</div>' +
+          '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:0;"><thead><tr style="background:#fafafa;">' +
+          '<th style="border:1px solid #e8e8e8;padding:4px 6px;">玩法</th><th style="border:1px solid #e8e8e8;padding:4px 6px;">内容</th>' +
+          '<th style="border:1px solid #e8e8e8;padding:4px 6px;">中组</th><th style="border:1px solid #e8e8e8;padding:4px 6px;">中奖组合（含球号）</th>' +
+          '<th style="border:1px solid #e8e8e8;padding:4px 6px;">对应球号</th>' +
+          '<th style="border:1px solid #e8e8e8;padding:4px 6px;">每组</th><th style="border:1px solid #e8e8e8;padding:4px 6px;">赔率</th>' +
+          '<th style="border:1px solid #e8e8e8;padding:4px 6px;">派彩</th><th style="border:1px solid #e8e8e8;padding:4px 6px;">渠道</th>' +
+          '</tr></thead><tbody>' +
+          hitRows.map(r => `<tr>
+            <td style="border:1px solid #e8e8e8;padding:4px 6px;">${esc(r.play_label || '')}</td>
+            <td class="pingma-formatted" style="border:1px solid #e8e8e8;padding:4px 6px;">${esc(r.display_text || '')}</td>
+            <td style="border:1px solid #e8e8e8;padding:4px 6px;">${esc(r.hit_count || 0)}</td>
+            <td style="border:1px solid #e8e8e8;padding:4px 6px;">${esc(r.hit_groups_display || '—')}</td>
+            <td style="border:1px solid #e8e8e8;padding:4px 6px;">${esc(r.hit_groups_numbers_display || '—')}</td>
+            <td style="border:1px solid #e8e8e8;padding:4px 6px;">${fmtMoney(r.amount_per_group)}</td>
+            <td style="border:1px solid #e8e8e8;padding:4px 6px;">${esc(r.odds)}</td>
+            <td style="border:1px solid #e8e8e8;padding:4px 6px;"><strong class="neg">${fmtMoney(r.payout)}</strong></td>
+            <td style="border:1px solid #e8e8e8;padding:4px 6px;">${esc(r.key_name || '')}</td>
+          </tr>`).join('') +
+          `</tbody><tfoot><tr class="pingma-payout-total-row">
+            <td colspan="2" style="border:1px solid #e8e8e8;padding:4px 6px;"><strong>合计</strong></td>
+            <td style="border:1px solid #e8e8e8;padding:4px 6px;"><strong>${esc(s.hit_rows_truncated ? hitCountPage : (s.hit_group_count || hitCountPage))}</strong>${s.hit_rows_truncated ? '<span style="font-weight:400;font-size:11px;color:#888;">（本页）</span>' : ''}</td>
+            <td colspan="4" style="border:1px solid #e8e8e8;padding:4px 6px;"></td>
+            <td style="border:1px solid #e8e8e8;padding:4px 6px;"><strong class="neg">${fmtMoney(payout)}</strong>${s.hit_rows_truncated && Math.abs(hitPayoutPage - payout) > 0.001 ? '<div style="font-weight:400;font-size:11px;color:#888;">本页 ' + fmtMoney(hitPayoutPage) + '</div>' : ''}</td>
+            <td style="border:1px solid #e8e8e8;padding:4px 6px;"></td>
+          </tr></tfoot></table>` +
+          (s.hit_rows_truncated ? '<p style="margin:6px 0 0;font-size:12px;color:#888;">仅显示前 ' + hitRows.length + ' 笔中奖明细；派彩合计为全部中奖笔数之和。</p>' : '') +
+          '</div>';
+      } else if (showCompare && Number(s.hit_group_count || 0) <= 0) {
+        hitHtml = '<div style="margin-top:8px;font-size:13px;color:#237804;">若开此号：全部未中，派彩 0</div>';
+      } else if (!showCompare && Number(s.hit_group_count || 0) > 0) {
+        hitHtml = '<div style="margin-top:6px;font-size:12px;color:#888;">中 ' + esc(s.hit_group_count || 0) + ' 组（明细见方案 1）</div>';
+      } else if (!showCompare) {
+        hitHtml = '<div style="margin-top:6px;font-size:12px;color:#237804;">若开此号：全部未中，派彩 0</div>';
+      }
+      let compareHtml = '';
+      if (showCompare && lastPingmaActualSummary) {
+        const actualNet = Number(lastPingmaActualSummary.net_profit || 0);
+        const delta = Math.round((net - actualNet) * 100) / 100;
+        compareHtml =
+          '<div style="margin-top:10px;padding:8px 10px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:4px;font-size:13px;">' +
+          '<div><strong>对照实际开奖</strong>：庄家' + fmtProfitWord(actualNet) + ' 元（派彩 ' + fmtMoney(lastPingmaActualSummary.total_payout) + '）</div>' +
+          '<div style="margin-top:4px;"><strong>若按推荐平码</strong>：庄家' + fmtProfitWord(net) + ' 元（派彩 ' + fmtMoney(payout) + '）</div>' +
+          '<div style="margin-top:4px;font-weight:600;">推荐比实际' + (delta >= 0 ? '多赚 ' : '少赚 ') +
+          '<span class="' + (delta >= 0 ? 'pos' : 'neg') + '">' + fmtMoney(Math.abs(delta)) + '</span> 元' +
+          '　<span style="font-weight:400;color:#666;">（实际开奖号码不可控，本区仅为模拟对比）</span></div></div>';
+      }
+      return (
+        (showCompare ? '<div style="font-size:12px;color:#555;margin-bottom:8px;">' + esc(rec.note || '') + '　公式：庄家盈亏 = 下注合计 − 派彩合计</div>' : '') +
+        '<div>建议 <strong>平码</strong>：<span class="pingma-recommend-balls">' + formatPingmaBallsHtml(pingmaBallsFromRec(rec)) + '</span></div>' +
+        (rec.teMaDisplay ? '<div style="margin-top:4px;font-size:13px;">配套 <strong>特码</strong>（肖类按 7 球计，不新增肖）：<strong>' + esc(rec.teMaDisplay) + '</strong></div>' : '') +
+        '<div style="margin-top:4px;font-size:12px;">七球肖：' + esc((rec.zodiacHit || []).join('、')) + '</div>' +
+        '<div class="pingma-payout-kpi" style="margin-top:8px;">' +
+        '<span>下注 <strong>' + fmtMoney(stake) + '</strong> 元</span>' +
+        '<span>派彩 <strong>' + fmtMoney(payout) + '</strong> 元</span>' +
+        '<span>庄家' + fmtProfitWord(net) + ' 元</span>' +
+        '<span>盈利率 <strong class="' + (meetsTarget ? 'pos' : 'neg') + '">' + esc(profitRate) + '%</strong>' +
+        '（目标 ' + esc(targetRate) + '%' + (meetsTarget ? ' ✓' : ' ✗') + '）</span>' +
+        '<span>中 <strong>' + esc(s.hit_group_count || 0) + '</strong> 组</span></div>' +
+        (sw.payout != null ? '<div style="margin-top:6px;font-size:12px;color:#874d00;">保守估算（最不利特码' +
+          (sw.teMa ? ' ' + esc(sw.teMa) : '') + '）：派彩 <strong>' + fmtMoney(worstPayout) + '</strong> 元，庄家' +
+          fmtProfitWord(worstNet) + ' 元</div>' : '') +
+        hitHtml +
+        compareHtml +
+        '<div style="margin-top:6px;font-size:12px;color:#666;">赔付压力最高号码：' + esc(rec.exposureHotNumbersDisplay || rec.avoidNumbersDisplay || '—') +
+        (Number(rec.boughtNumberCount || 0) >= 49 ? '　（49 号均有人买过，按组合金额权重选低风险号）' : '') +
+        '　热肖：' + esc(rec.avoidZodiacsDisplay || '—') + '</div>');
+    }
+
+    function renderPingmaPayout(payout, lotteryDraw) {
+      const ovEl = document.getElementById('pingmaPayoutOverview');
+      const byPlayEl = document.getElementById('pingmaPayoutByPlayBody');
+      const rowsEl = document.getElementById('pingmaPayoutRowsBody');
+      const hintEl = document.getElementById('pingmaPayoutRowsHint');
+      if (!ovEl || !byPlayEl || !rowsEl) return;
+      payout = payout || {};
+      if (payout.recommendedDraws && payout.recommendedDraws.length) {
+        renderPingmaRecommendDraws(payout);
+      } else if (payout.recommendedDraw) {
+        renderPingmaRecommendDraw(payout.recommendedDraw);
+      } else if (payout.available && !pingmaRecommendLoading) {
+        const el = document.getElementById('pingmaRecommendDraw');
+        if (el && !el.dataset.recommendReady) {
+          el.classList.remove('hidden');
+          el.innerHTML = '<strong>推荐开奖（庄家盈利 · 模拟）</strong><br><span style="color:#888;">正在计算推荐方案…</span>';
+          void loadPingmaRecommend();
+        }
+      } else if (!payout.available && !pingmaRecommendLoading) {
+        renderPingmaRecommendDraw(null);
+      }
+      if (!payout.available) {
+        const dr = payout.drawResolve || {};
+        let hint = payout.note || '请填写已开奖期号后刷新统计。';
+        if (dr.periodGuess && dr.periodInput === '') {
+          hint += '（筛选范围内提交期号：' + esc(dr.periodGuess) + '）';
+        }
+        ovEl.innerHTML = '<span style="color:#a8071a;">' + esc(hint) + '</span>';
+        byPlayEl.innerHTML = '<tr><td colspan="11" style="color:#888;">—</td></tr>';
+        rowsEl.innerHTML = '<tr><td colspan="14" style="color:#888;">—</td></tr>';
+        if (hintEl) hintEl.textContent = '';
+        if (!payout.recommendedDraw && !pingmaRecommendLoading) {
+          const recEl = document.getElementById('pingmaRecommendDraw');
+          if (!recEl || !recEl.dataset.recommendReady) void loadPingmaRecommend();
+        }
+        return;
+      }
+      const s = payout.summary || {};
+      lastPingmaActualSummary = {
+        total_stake: s.total_stake,
+        total_payout: s.total_payout,
+        net_profit: s.net_profit,
+      };
+      const net = Number(s.net_profit || 0);
+      const zodiacHit = (payout.zodiacHit || []).join('、');
+      const zheng = (payout.zhengMa || []).join(', ');
+      const ballsDisp = payout.drawBallsDisplay || '';
+      ovEl.innerHTML =
+        '<div style="font-weight:600;color:#1f2d3d;margin-bottom:4px;">【实际开奖派彩】</div>' +
+        '<div style="font-size:12px;color:#666;margin-bottom:6px;">以下为历史开奖结果，与下方「推荐开奖（模拟）」无关；实际号码不可改。</div>' +
+        '<div>' + esc(payout.note || '') + '　<strong>庄家盈亏 = 下注合计 − 派彩合计</strong></div>' +
+        '<div style="margin-top:6px;">对照期号 <strong>' + esc(payout.drawPeriod || (lotteryDraw && lotteryDraw.periodNumber) || '') +
+        '</strong>；平码 <strong>' + esc(zheng) + '</strong>；特码 <strong>' + esc(payout.teMa || '') +
+        '</strong>；七球肖 <strong>' + esc(zodiacHit) + '</strong></div>' +
+        (ballsDisp ? '<div style="margin-top:6px;font-size:13px;">开奖号码（含生肖）：<strong style="letter-spacing:0.5px;">' + esc(ballsDisp) + '</strong></div>' : '') +
+        '<div class="pingma-payout-kpi">' +
+        '<span>下注合计 <strong>' + fmtMoney(s.total_stake) + '</strong> 元</span>' +
+        '<span>派彩合计 <strong>' + fmtMoney(s.total_payout) + '</strong> 元</span>' +
+        '<span>庄家' + fmtProfitWord(net) + ' 元</span>' +
+        '<span>明细 <strong>' + esc(s.bet_row_count || 0) + '</strong> 笔 / 展开 <strong>' + esc(s.group_count || 0) +
+        '</strong> 组 / 中 <strong>' + esc(s.hit_group_count || 0) + '</strong> 组</span></div>' +
+        (s.zodiac_payout != null ? '<div style="margin-top:8px;font-size:12px;color:#874d00;">派彩构成：肖类 <strong>' +
+          fmtMoney(s.zodiac_payout) + '</strong> 元（占 ' + esc(s.zodiac_payout_pct || 0) + '%）　号码类 <strong>' +
+          fmtMoney(s.number_payout) + '</strong> 元。七球肖「' + esc(zodiacHit) +
+          '」覆盖下注热肖时，连肖/多肖派彩会显著抬高——此为<strong>真实开奖</strong>结果，请看上方「推荐开奖（模拟）」对比可赚金额。</div>' : '');
+      const byPlay = payout.byPlayType || [];
+      byPlayEl.innerHTML = byPlay.length
+        ? byPlay.map(r => {
+            const rowNet = Number(r.net_profit != null ? r.net_profit : (Number(r.stake || 0) - Number(r.payout || 0)));
+            const rowNetCls = rowNet >= 0 ? 'pos' : 'neg';
+            return `<tr>
+            <td>${esc(r.play_label || r.play_type)}</td>
+            <td>${esc(r.selection_type === 'zodiac' ? '肖' : '号')}</td>
+            <td class="pingma-sel-cell">${esc(r.selection_display || '')}</td>
+            <td class="pingma-sel-cell">${esc(r.numbers_display || '')}</td>
+            <td>${esc(r.odds)}</td>
+            <td>${esc(r.bet_count)}</td>
+            <td>${esc(r.group_count)}</td>
+            <td>${esc(r.hit_group_count)}</td>
+            <td>${fmtMoney(r.stake)}</td>
+            <td><strong class="neg">${fmtMoney(r.payout)}</strong></td>
+            <td><strong class="${rowNetCls}">${fmtMoney(rowNet)}</strong></td>
+          </tr>`;
+          }).join('') +
+          `<tr class="pingma-payout-total-row">
+            <td colspan="5"><strong>合计</strong></td>
+            <td><strong>${esc(byPlay.reduce((n, r) => n + Number(r.bet_count || 0), 0))}</strong></td>
+            <td><strong>${esc(byPlay.reduce((n, r) => n + Number(r.group_count || 0), 0))}</strong></td>
+            <td><strong>${esc(byPlay.reduce((n, r) => n + Number(r.hit_group_count || 0), 0))}</strong></td>
+            <td><strong>${fmtMoney(s.total_stake)}</strong></td>
+            <td><strong class="neg">${fmtMoney(s.total_payout)}</strong></td>
+            <td><strong class="${net >= 0 ? 'pos' : 'neg'}">${fmtMoney(net)}</strong></td>
+          </tr>`
+        : '<tr><td colspan="11" style="color:#888;">暂无平码明细</td></tr>';
+      const rows = payout.rows || [];
+      rowsEl.innerHTML = rows.length
+        ? rows.map(r => {
+            const rowNet = Number(r.net_profit != null ? r.net_profit : (Number(r.stake || 0) - Number(r.payout || 0)));
+            const rowNetCls = rowNet >= 0 ? 'pos' : 'neg';
+            return `<tr>
+            <td>${r.id}</td>
+            <td class="pingma-formatted">${esc(r.display_text || '')}</td>
+            <td>${esc(r.group_count)}</td>
+            <td>${esc(r.hit_count)}</td>
+            <td>${fmtMoney(r.amount_per_group)}</td>
+            <td>${fmtMoney(r.stake)}</td>
+            <td>${esc(r.odds)}</td>
+            <td>${fmtMoney(r.payout_per_hit)}</td>
+            <td><strong class="neg">${fmtMoney(r.payout)}</strong></td>
+            <td><strong class="${rowNetCls}">${fmtMoney(rowNet)}</strong></td>
+            <td class="pingma-payout-hit pingma-sel-cell">${esc(r.hit_groups_display || '—')}</td>
+            <td class="pingma-sel-cell">${esc(r.hit_groups_numbers_display || '—')}</td>
+            <td>${esc(r.period_no)}</td>
+            <td>${esc(r.key_name)}</td>
+          </tr>`;
+          }).join('') +
+          `<tr class="pingma-payout-total-row">
+            <td colspan="5"><strong>合计${payout.rows_truncated ? '（全部明细）' : ''}</strong></td>
+            <td><strong>${fmtMoney(s.total_stake)}</strong></td>
+            <td colspan="2"></td>
+            <td><strong class="neg">${fmtMoney(s.total_payout)}</strong></td>
+            <td><strong class="${net >= 0 ? 'pos' : 'neg'}">${fmtMoney(net)}</strong></td>
+            <td colspan="4"></td>
+          </tr>`
+        : '<tr><td colspan="14" style="color:#888;">暂无数据</td></tr>';
+      if (hintEl) {
+        hintEl.textContent = payout.rows_truncated
+          ? ('仅显示最近 ' + rows.length + ' 条，共 ' + (payout.rows_total || rows.length) + ' 条；汇总金额为全部明细合计。')
+          : (rows.length ? ('共 ' + rows.length + ' 条。') : '');
+      }
+    }
+
+    async function api(action, body) {
+      const resp = await fetch(apiBase + '?action=' + encodeURIComponent(action), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {})
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.ok) throw new Error(data.message || '请求失败');
+      return data;
+    }
+
+    let collectAgentDlgPassId2 = 0;
+    let agentPasswordRequired = false;
+
+    function promptAgentAdd(title, hintLine) {
+      return new Promise((resolve) => {
+        const bd = document.getElementById('agentAddPwBackdrop');
+        document.getElementById('agentAddPwTitle').textContent = title;
+        document.getElementById('agentAddPwHint').textContent = agentPasswordRequired
+          ? '已启用代理密码列：新建须设置至少4位登录密码（存哈希）。' + (hintLine || '')
+          : ('可选填密码（至少4位才会写入）；未迁移密码表时可不填。' + (hintLine || ''));
+        document.getElementById('agentAddPwName').value = '';
+        document.getElementById('agentAddPwPwd').value = '';
+        const cleanup = () => {
+          bd.classList.remove('open');
+          bd.setAttribute('aria-hidden', 'true');
+          bd.onclick = null;
+          document.getElementById('agentAddPwOk').onclick = null;
+          document.getElementById('agentAddPwCancel').onclick = null;
+        };
+        const finish = (payload) => {
+          cleanup();
+          resolve(payload);
+        };
+        document.getElementById('agentAddPwOk').onclick = () => {
+          const name = document.getElementById('agentAddPwName').value.trim();
+          const pwd = document.getElementById('agentAddPwPwd').value;
+          if (!name) {
+            setStatus('请输入代理名称');
+            return;
+          }
+          if (agentPasswordRequired && (!pwd || pwd.length < 4)) {
+            setStatus('请填写代理登录密码（至少4位）');
+            return;
+          }
+          finish({ name, password: pwd && pwd.length >= 4 ? pwd : '' });
+        };
+        document.getElementById('agentAddPwCancel').onclick = () => finish(null);
+        bd.onclick = (ev) => {
+          if (ev.target === bd) finish(null);
+        };
+        bd.classList.add('open');
+        bd.setAttribute('aria-hidden', 'false');
+        document.getElementById('agentAddPwName').focus();
+      });
+    }
+
+    function collectAgentBuildTreeHtml2(rows, parentId, depth) {
+      const kids = (rows || []).filter((r) => Number(r.parent_id || 0) === parentId);
+      kids.sort((a, b) => Number(a.id) - Number(b.id));
+      let html = '';
+      kids.forEach((r) => {
+        const indent = '\u3000'.repeat(depth) + (depth ? '\u2514 ' : '');
+        html += `<tr>
+          <td>${indent}<strong>${esc(r.name)}</strong> <span style="color:#888;font-size:12px;">#${r.id}</span>
+            <div style="color:#888;font-size:11px;margin-top:2px;">${esc(r.label || r.name)}</div></td>
+          <td style="white-space:nowrap;">
+            <button type="button" class="collect-agent-addsub2" data-pid="${r.id}" style="margin-right:4px;">添下级</button>
+            <button type="button" class="collect-agent-del2 gray" data-aid="${r.id}">删除</button>
+          </td>
+        </tr>`;
+        html += collectAgentBuildTreeHtml2(rows, Number(r.id), depth + 1);
+      });
+      return html;
+    }
+
+    async function refreshCollectAgentDialogBody2() {
+      const passId = collectAgentDlgPassId2;
+      const el = document.getElementById('collectAgentDlgBody2');
+      if (!el || !passId) return;
+      el.innerHTML = '加载中…';
+      try {
+        const data = await api('admin_distributor_list', { passId });
+        if (typeof data.agentPasswordRequired === 'boolean') {
+          agentPasswordRequired = !!data.agentPasswordRequired;
+        }
+        const sup = data.hierarchySupported;
+        const hint = sup
+          ? '<p style="color:#666;margin:0 0 8px;">无限层级；同一上级下名称不可重复；' + (agentPasswordRequired ? '新增须设登录密码（至少4位）。' : '') + '删除会移除该代理及其全部下级。</p>'
+          : '<p style="color:#a8071a;margin:0 0 8px;">请先执行 <code>doc/collect_distributor_parent.sql</code> 后刷新。</p>';
+        el.innerHTML = hint + '<p style="margin:8px 0"><button type="button" id="collectAgentAddRoot2">添加顶级代理</button></p>'
+          + '<table><thead><tr><th>结构</th><th style="width:200px">操作</th></tr></thead><tbody id="collectAgentDlgTbody2"></tbody></table>';
+        document.getElementById('collectAgentAddRoot2').onclick = async () => {
+          const r = await promptAgentAdd('添加顶级代理', '');
+          if (!r) return;
+          const body = { passId, name: r.name, parentId: 0 };
+          if (r.password) body.password = r.password;
+          try {
+            await api('admin_distributor_add', body);
+            setStatus('已添加');
+            await refreshCollectAgentDialogBody2();
+          } catch (err) {
+            setStatus(err.message);
+          }
+        };
+        const tbody = document.getElementById('collectAgentDlgTbody2');
+        const rows = data.rows || [];
+        tbody.innerHTML = collectAgentBuildTreeHtml2(rows, 0, 0) || '<tr><td colspan="2" style="color:#888;">暂无代理</td></tr>';
+        tbody.querySelectorAll('.collect-agent-addsub2').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const pid = Number(btn.getAttribute('data-pid'));
+            const r = await promptAgentAdd('添下级代理', ' 将挂在 #' + pid + ' 下。');
+            if (!r) return;
+            const body = { passId, name: r.name, parentId: pid };
+            if (r.password) body.password = r.password;
+            try {
+              await api('admin_distributor_add', body);
+              setStatus('已添加');
+              await refreshCollectAgentDialogBody2();
+            } catch (err) {
+              setStatus(err.message);
+            }
+          });
+        });
+        tbody.querySelectorAll('.collect-agent-del2').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const id = Number(btn.getAttribute('data-aid'));
+            if (!window.confirm('确定删除该代理及其全部下级？')) return;
+            api('admin_distributor_delete', { id, passId }).then(() => {
+              setStatus('已删除');
+              return refreshCollectAgentDialogBody2();
+            }).catch((err) => setStatus(err.message));
+          });
+        });
+      } catch (e) {
+        el.innerHTML = '<p style="color:#a8071a">' + esc(e.message) + '</p>';
+      }
+    }
+
+    function openAgentTreeDialog2(passId, keyNameEnc) {
+      collectAgentDlgPassId2 = passId;
+      const keyName = decodeURIComponent(keyNameEnc || '');
+      document.getElementById('collectAgentDlgTitle2').textContent = '下级代理 — ' + keyName + '（#' + passId + '）';
+      const bd = document.getElementById('collectAgentBackdrop');
+      bd.classList.add('open');
+      bd.setAttribute('aria-hidden', 'false');
+      refreshCollectAgentDialogBody2();
+    }
+
+    document.getElementById('collectAgentBackdropClose').addEventListener('click', () => {
+      const bd = document.getElementById('collectAgentBackdrop');
+      bd.classList.remove('open');
+      bd.setAttribute('aria-hidden', 'true');
+    });
+    document.getElementById('collectAgentBackdrop').addEventListener('click', (e) => {
+      if (e.target.id === 'collectAgentBackdrop') {
+        e.currentTarget.classList.remove('open');
+        e.currentTarget.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    function renderWindows() {
+      const tbody = document.getElementById('windowBody');
+      tbody.innerHTML = windows.map((w, idx) => `
+        <tr>
+          <td>${esc(w.start_time)}</td>
+          <td>${esc(w.end_time)}</td>
+          <td><input type="checkbox" data-idx="${idx}" class="wEnable" ${w.enabled ? 'checked' : ''}></td>
+          <td><button data-del="${idx}" class="gray">删除</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function buildSaveSettingsPayload() {
+      return {
+        submitEnabled: document.getElementById('submitEnabled').checked,
+        defaultPeriodNo: document.getElementById('defaultPeriodNo').value.trim(),
+      pingmaTargetProfitPct: document.getElementById('pingmaTargetProfitPct').value.trim(),
+      pingmaRecommendCount: document.getElementById('pingmaRecommendCount').value.trim(),
+      windows
+    };
+  }
+
+  async function loadSettings() {
+    const data = await api('admin_get_settings', {});
+    document.getElementById('submitEnabled').checked = !!data.settings.submitEnabled;
+    document.getElementById('defaultPeriodNo').value = data.settings.defaultPeriodNo != null ? String(data.settings.defaultPeriodNo) : '';
+    const pctEl = document.getElementById('pingmaTargetProfitPct');
+    if (pctEl) {
+      pctEl.value = data.settings.pingmaTargetProfitPct != null ? String(data.settings.pingmaTargetProfitPct) : '70';
+    }
+    const cntEl = document.getElementById('pingmaRecommendCount');
+    if (cntEl) {
+      cntEl.value = data.settings.pingmaRecommendCount != null ? String(data.settings.pingmaRecommendCount) : '3';
+    }
+      windows = (data.settings.windows || []).map(w => ({
+        start_time: w.start_time, end_time: w.end_time, enabled: Number(w.enabled) === 1
+      }));
+      renderWindows();
+    }
+
+    function adminFilterBody(extra) {
+      const body = {
+        periodNo: document.getElementById('periodNo').value.trim(),
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value,
+        ballScope: getAdminBallScope()
+      };
+      const ch = document.getElementById('channelNameFilter').value.trim();
+      if (ch) {
+        body.channelName = ch;
+      } else {
+        const pid = parseInt(document.getElementById('passIdFilter').value, 10);
+        if (Number.isFinite(pid) && pid > 0) body.passId = pid;
+      }
+      return Object.assign(body, extra || {});
+    }
+
+    function populatePassIdFilter() {
+      const sel = document.getElementById('passIdFilter');
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">全部渠道</option>' + passkeys.map((p) =>
+        `<option value="${p.id}">${esc(p.key_name)}（#${p.id}）</option>`
+      ).join('');
+      if ([...sel.options].some((o) => o.value === cur)) sel.value = cur;
+    }
+
+    function renderPasskeys() {
+      const tbody = document.getElementById('passkeyBody');
+      tbody.innerHTML = passkeys.map((p) => `
+        <tr>
+          <td>${p.id}</td>
+          <td>${esc(p.key_name)}</td>
+          <td>${Number(p.status) === 1 ? '启用' : '停用'}</td>
+          <td>${esc(p.created_at || '')}</td>
+          <td>
+            <button type="button" data-agent-tree="${p.id}" data-agent-name="${encodeURIComponent(p.key_name || '')}" style="background:#08979c;color:#fff;margin-right:4px;">下级代理</button>
+            <button data-toggle-id="${p.id}" data-next="${Number(p.status) === 1 ? 0 : 1}" class="gray">
+              ${Number(p.status) === 1 ? '停用' : '启用'}
+            </button>
+            <button data-reset-id="${p.id}" class="gray">重置密码</button>
+            <button data-del-id="${p.id}" class="gray">删除</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadPasskeys() {
+      const data = await api('admin_passkey_list', {});
+      passkeys = data.rows || [];
+      renderPasskeys();
+      populatePassIdFilter();
+    }
+
+    async function loadAdminAgents() {
+      const pid = parseInt(document.getElementById('passIdFilter').value, 10);
+      if (!Number.isFinite(pid) || pid <= 0) {
+        setStatus('请先在下方「统计筛选」下拉框选择渠道（秘钥）');
+        return;
+      }
+      try {
+        const data = await api('admin_distributor_list', { passId: pid });
+        if (typeof data.agentPasswordRequired === 'boolean') {
+          agentPasswordRequired = !!data.agentPasswordRequired;
+        }
+        const sumEl = document.getElementById('agentSummary');
+        sumEl.innerHTML = '渠道 <strong>' + esc(data.key_name) + '</strong>（ID ' + data.passId + '）<strong>下属代理累计总收款</strong>：<strong style="color:#c41d7f;">' + (Number(data.passTotalAmount) || 0) + '</strong>（以下为按提交时选择的代理汇总）';
+        const agg = data.submissionByAgent || [];
+        document.getElementById('agentAggBody').innerHTML = agg.length
+          ? agg.map((r) => '<tr><td>' + esc(r.distributor_name) + '</td><td>' + esc(r.amt) + '</td><td>' + esc(r.n_sub) + '</td></tr>').join('')
+          : '<tr><td colspan="3" style="color:#888;">暂无归属数据（需执行 SQL 并产生带代理的提交）</td></tr>';
+        const byId = {};
+        agg.forEach((a) => { byId[Number(a.distributor_id)] = a; });
+        const regs = data.rows || [];
+        function regTreeHtml2(rows, parentId, depth) {
+          const kids = (rows || []).filter((r) => Number(r.parent_id || 0) === parentId);
+          kids.sort((a, b) => Number(a.id) - Number(b.id));
+          let h = '';
+          kids.forEach((r) => {
+            const sub = byId[Number(r.id)];
+            const extra = sub ? ' <span style="color:#888;font-size:12px;">累计' + esc(sub.amt) + '</span>' : '';
+            const ind = '\u3000'.repeat(depth) + (depth ? '\u2514 ' : '');
+            h += '<tr><td>' + r.id + '</td><td>' + ind + esc(r.name) + extra + '<div style="color:#888;font-size:11px;">' + esc(r.label || r.name) + '</div></td><td>' + (Number(r.status) === 1 ? '启用' : '停用') + '</td><td>' + esc(r.created_at) + '</td><td><button type="button" class="gray" data-del-agent="' + r.id + '">删除</button></td></tr>';
+            h += regTreeHtml2(rows, Number(r.id), depth + 1);
+          });
+          return h;
+        }
+        document.getElementById('agentRegBody').innerHTML = regs.length
+          ? regTreeHtml2(regs, 0, 0)
+          : '<tr><td colspan="5" style="color:#888;">暂无登记代理，可在上方输入名称添加</td></tr>';
+        setStatus('已加载渠道「' + data.key_name + '」的代理与收款');
+      } catch (e) {
+        setStatus(e.message);
+      }
+    }
+
+    async function loadStats() {
+      const body = adminFilterBody();
+      const isPingmaEarly = getAdminBallScope() === 'pingma';
+      if (isPingmaEarly) {
+        void loadPingmaRecommend();
+      }
+      const data = await api('admin_stats', body);
+      const ov = data.overview || {};
+      const isPingma = getAdminBallScope() === 'pingma';
+      const specOk = data.specialStatsSupported !== false;
+      let warn = '';
+      if (!isPingma && !specOk) {
+        warn = '<p style="color:#a8071a;font-size:13px;">数据库尚未添加字段 <code>is_special</code>，特号单独统计不可用。请执行 <code>doc/collect_alter_is_special.sql</code> 后刷新；当前全部明细暂归入「正码」统计。</p>';
+      }
+      if (isPingma && data.betsTableOk === false) {
+        document.getElementById('pingmaStatsWarn').classList.remove('hidden');
+        document.getElementById('pingmaStatsWarn').textContent = '平码明细表未安装：请执行 doc/collect_submission_bets.sql';
+      } else {
+        document.getElementById('pingmaStatsWarn').classList.add('hidden');
+      }
+      const periodFilterVal = document.getElementById('periodNo').value.trim();
+      let drawHtml = '';
+      if (data.lotteryDraw && data.lotteryDraw.teMa) {
+        const ld = data.lotteryDraw;
+        const z = (ld.zhengMa || []).join(', ');
+        drawHtml = `<p style="background:#f6ffed;border:1px solid #b7eb8f;padding:8px;border-radius:4px;">开奖对照（<code>ay_kjdata</code>）期号 <strong>${ld.periodNumber}</strong> 正码 ${z} <strong>特码 ${ld.teMa}</strong></p>`;
+      } else if (periodFilterVal && data.lotteryDraw === null) {
+        drawHtml = '<p style="color:#888;font-size:13px;">该期号在开奖表中无记录（请确认与 <code>ay_kjdata.number</code> 完全一致）。</p>';
+      }
+      const ch = document.getElementById('channelNameFilter').value.trim();
+      const sel = document.getElementById('passIdFilter');
+      let passLine = '';
+      if (ch) {
+        passLine = `<p style="color:#666;font-size:13px;">筛选渠道名称：<strong>${esc(ch)}</strong>（模糊匹配，优先于下拉）</p>`;
+      } else if (sel.value) {
+        passLine = `<p style="color:#666;font-size:13px;">筛选渠道：<strong>${esc(sel.options[sel.selectedIndex].text)}</strong></p>`;
+      }
+      const scopeLabel = getAdminBallScope() === 'pingma' ? '平码' : '特码';
+      const groupsLine = isPingma
+        ? `<p>【平码】总组数：${ov.total_groups || 0}</p>`
+        : '';
+      document.getElementById('overview').innerHTML = warn + drawHtml + passLine +
+        `<p>【${scopeLabel}】总提交次数：${ov.submit_count || 0}，单据总金额：${ov.total_amount || 0}</p>` +
+        groupsLine +
+        (isPingma
+          ? ''
+          : `<p>明细汇总 — 全部明细金额：${(Number(ov.normal_amount || 0) + Number(ov.special_amount || 0)).toFixed(2)}（正码 ${ov.normal_amount || 0} / ${ov.normal_item_count || 0} 条 + 特号 ${ov.special_amount || 0} / ${ov.special_item_count || 0} 条）</p>`);
+      if (isPingma) {
+        renderPingmaPayout(data.pingmaPayout, data.lotteryDraw);
+        const pts = data.playTypeStats || [];
+        document.getElementById('playTypeBody').innerHTML = pts.length
+          ? pts.map(r => `<tr>
+              <td>${esc(r.play_label || r.play_type)}</td>
+              <td>${esc(r.selection_type === 'zodiac' ? '肖' : '号')}</td>
+              <td class="pingma-sel-cell">${esc(r.selection_display || '')}</td>
+              <td class="pingma-sel-cell">${esc(r.numbers_display || '')}</td>
+              <td>${esc(r.bet_count)}</td>
+              <td>${esc(r.group_count)}</td>
+              <td>${esc(r.total_amount)}</td>
+            </tr>`).join('')
+          : '<tr><td colspan="7" style="color:#888;">暂无平码数据</td></tr>';
+        const cov = data.pingmaCoverage || {};
+        const bn = Number(cov.bought_number_count || 0);
+        const un = Number(cov.unbought_number_count || 0);
+        const bz = Number(cov.bought_zodiac_count || 0);
+        const uz = Number(cov.unbought_zodiac_count || 0);
+        document.getElementById('pingmaBoughtNumsTitle').textContent = '已买号码（' + bn + ' / 49）';
+        document.getElementById('pingmaUnboughtNumsTitle').textContent = '未买号码（' + un + ' / 49）';
+        document.getElementById('pingmaBoughtZodiacTitle').textContent = '已买生肖（' + bz + ' / 12）';
+        document.getElementById('pingmaUnboughtZodiacTitle').textContent = '未买生肖（' + uz + ' / 12，含对应球号）';
+        document.getElementById('pingmaBoughtNums').textContent = cov.bought_numbers_display || '（无）';
+        document.getElementById('pingmaUnboughtNums').textContent = cov.unbought_numbers_display || '（全部已覆盖）';
+        document.getElementById('pingmaBoughtZodiacs').textContent = cov.bought_zodiacs_display || '（无）';
+        const zDetails = cov.unbought_zodiac_details || [];
+        document.getElementById('pingmaUnboughtZodiacBody').innerHTML = zDetails.length
+          ? zDetails.map((z) => `<tr><td>${esc(z.zodiac || '')}</td><td class="pingma-sel-cell">${esc(z.numbers || '')}</td></tr>`).join('')
+          : '<tr><td colspan="2" style="color:#237804;">十二生肖均已出现</td></tr>';
+        const mapPingmaRank = (rows, key) => (rows || []).length
+          ? rows.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r[key] || '')}</td><td>${esc(r.count || 0)}</td><td class="pingma-sel-cell">${esc(r.play_types_display || '—')}</td></tr>`).join('')
+          : '<tr><td colspan="4" style="color:#888;">暂无数据</td></tr>';
+        document.getElementById('pingmaNumberRankBody').innerHTML = mapPingmaRank(cov.number_rank, 'num');
+        document.getElementById('pingmaZodiacRankBody').innerHTML = mapPingmaRank(cov.zodiac_rank, 'zodiac');
+        const bets = data.betRows || [];
+        document.getElementById('pingmaBetBody').innerHTML = bets.length
+          ? bets.map(b => {
+              const line = esc(b.display_text || '');
+              return `<tr><td>${b.id}</td><td class="pingma-formatted">${line}</td>
+                <td class="pingma-sel-cell">${esc(b.selection_display || '')}</td>
+                <td class="pingma-sel-cell">${esc(b.numbers_display || '')}</td>
+                <td>${esc(b.group_count)}</td><td>${esc(b.amount_per_group)}</td><td>${esc(b.total_amount)}</td>
+                <td>${esc(b.period_no)}</td><td>${esc(b.key_name)}</td><td>${esc(b.created_at)}</td></tr>`;
+            }).join('')
+          : '<tr><td colspan="10" style="color:#888;">暂无平码明细</td></tr>';
+        return;
+      }
+      const mapNumAsc = (arr) => (arr || []).map((r, i) =>
+        `<tr><td>${i + 1}</td><td>${esc(r.num)}</td><td>${esc(r.total_amount)}</td><td>${esc(r.item_count)}</td></tr>`
+      ).join('');
+      const renderTemaCoverage = (cov) => {
+        cov = cov || {};
+        const unSec = document.getElementById('temaUnboughtSection');
+        const allSec = document.getElementById('temaAllBoughtSection');
+        if (!unSec || !allSec) return;
+        if (cov.all_bought) {
+          unSec.classList.add('hidden');
+          allSec.classList.remove('hidden');
+          const title = document.getElementById('temaAllBoughtTitle');
+          if (title) {
+            title.textContent = '全部号码已覆盖 · 购买金额升序（' + (cov.bought_number_count || 49) + ' / 49）';
+          }
+          const body = document.getElementById('temaRankAscBody');
+          if (body) {
+            const rows = cov.number_rank_asc || [];
+            body.innerHTML = rows.length
+              ? mapNumAsc(rows)
+              : '<tr><td colspan="4" style="color:#888;">暂无数据</td></tr>';
+          }
+        } else {
+          unSec.classList.remove('hidden');
+          allSec.classList.add('hidden');
+          const bn = Number(cov.bought_number_count || 0);
+          const un = Number(cov.unbought_number_count || 0);
+          const bt = document.getElementById('temaBoughtNumsTitle');
+          const ut = document.getElementById('temaUnboughtNumsTitle');
+          if (bt) bt.textContent = '已买号码（' + bn + ' / 49）';
+          if (ut) ut.textContent = '未买号码（' + un + ' / 49）';
+          const boughtEl = document.getElementById('temaBoughtNums');
+          const unboughtEl = document.getElementById('temaUnboughtNums');
+          if (boughtEl) boughtEl.textContent = cov.bought_numbers_display || '（无）';
+          if (unboughtEl) unboughtEl.textContent = cov.unbought_numbers_display || '（无）';
+        }
+      };
+      renderTemaCoverage(data.temaCoverage);
+      const mapNum = (arr) => (arr || []).map(r =>
+        `<tr><td>${esc(r.num)}</td><td>${esc(r.total_amount)}</td><td>${esc(r.item_count)}</td></tr>`
+      ).join('');
+      const mapNumNormalSorted = (arr) => {
+        const list = [...(arr || [])].map(r => ({
+          num: String(r.num),
+          total_amount: Number(r.total_amount || 0),
+          item_count: Number(r.item_count || 0)
+        }));
+        list.sort((a, b) =>
+          (b.total_amount - a.total_amount) ||
+          (b.item_count - a.item_count) ||
+          a.num.localeCompare(b.num, undefined, { numeric: true })
+        );
+        return list.map(r =>
+          `<tr><td>${esc(r.num)}</td><td>${r.total_amount.toFixed(2)}</td><td>${r.item_count}</td></tr>`
+        ).join('');
+      };
+      const mapTail = (arr) => (arr || []).map(r =>
+        `<tr><td>${esc(r.tail)}</td><td>${esc(r.total_amount)}</td><td>${esc(r.item_count)}</td></tr>`
+      ).join('');
+      document.getElementById('numBodyAll').innerHTML = mapNum(data.numberStatsAll);
+      document.getElementById('tailBodyAll').innerHTML = mapTail(data.tailStatsAll);
+      if (data.temaCoverage && data.temaCoverage.all_bought) {
+        document.getElementById('numBodyNormal').innerHTML = mapNumAsc(data.temaCoverage.number_rank_asc);
+      } else {
+        document.getElementById('numBodyNormal').innerHTML = mapNumNormalSorted(data.numberStatsAll);
+      }
+      document.getElementById('tailBodyNormal').innerHTML = mapTail(data.tailStatsNormal);
+      document.getElementById('tailBodySpecial').innerHTML = mapTail(data.tailStatsSpecial);
+    }
+
+    async function loadList() {
+      const body = adminFilterBody({ page: 1, pageSize: 50 });
+      const data = await api('admin_list', body);
+      document.getElementById('listBody').innerHTML = (data.rows || []).map(r => {
+        const detail = (r.ball_scope === 'pingma' && (r.formatted_text || r.bet_summary))
+          ? esc(r.formatted_text || r.bet_summary)
+          : esc(r.raw_text);
+        const detailClass = (r.ball_scope === 'pingma' && (r.formatted_text || r.bet_summary)) ? ' pingma-formatted' : '';
+        const itemsLabel = r.ball_scope === 'pingma' ? (esc(r.total_items) + '组') : esc(r.total_items);
+        return `<tr>
+          <td>${r.id}</td><td>${scopeTagHtml(r.ball_scope || 'tema')}</td><td>${esc(r.period_no)}</td><td>${esc(r.key_name)}</td>
+          <td>${esc(r.total_amount)}</td><td>${itemsLabel}</td>
+          <td>${esc(r.created_at)}</td><td>${esc(r.client_ip)}</td><td class="${detailClass.trim()}">${detail}</td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="9" style="color:#888;">暂无记录</td></tr>';
+      setStatus('【' + (getAdminBallScope() === 'pingma' ? '平码' : '特码') + '】记录总数：' + data.total);
+    }
+
+    async function bootstrapAdminBySession() {
+      try {
+        const status = await api('admin_status', {});
+        if (!status.logged_in) {
+          throw new Error('请先登录后台管理系统');
+        }
+        loginBox.classList.add('hidden');
+        mainBox.classList.remove('hidden');
+        restoreAdminScope();
+        setStatus('管理员登录验证通过');
+        await loadSettings();
+        await loadPasskeys();
+      } catch (e) {
+        mainBox.classList.add('hidden');
+        loginBox.classList.add('hidden');
+        setStatus(e.message);
+      }
+    }
+
+    document.getElementById('btnAddWindow').addEventListener('click', () => {
+      const start = document.getElementById('startTime').value.trim();
+      const end = document.getElementById('endTime').value.trim();
+      if (!/^\d{2}:\d{2}$/.test(start) || !/^\d{2}:\d{2}$/.test(end)) {
+        setStatus('时段格式错误，请使用 HH:mm');
+        return;
+      }
+      windows.unshift({ start_time: start, end_time: end, enabled: true });
+      renderWindows();
+    });
+
+    document.getElementById('windowBody').addEventListener('click', (e) => {
+      const del = e.target.getAttribute('data-del');
+      if (del !== null) {
+        windows.splice(Number(del), 1);
+        renderWindows();
+      }
+    });
+
+    document.getElementById('windowBody').addEventListener('change', (e) => {
+      if (e.target.classList.contains('wEnable')) {
+        const idx = Number(e.target.getAttribute('data-idx'));
+        if (windows[idx]) windows[idx].enabled = e.target.checked;
+      }
+    });
+
+    document.getElementById('btnSaveSettings').addEventListener('click', async () => {
+      try {
+        await api('admin_save_settings', buildSaveSettingsPayload());
+        setStatus('设置已保存');
+        await loadSettings();
+      } catch (e) {
+        setStatus(e.message);
+      }
+    });
+
+    document.getElementById('btnAddPasskey').addEventListener('click', async () => {
+      try {
+        const keyName = document.getElementById('newKeyName').value.trim();
+        const password = document.getElementById('newKeyPassword').value.trim();
+        const status = document.getElementById('newKeyEnabled').checked;
+        await api('admin_passkey_add', { keyName, password, status });
+        document.getElementById('newKeyName').value = '';
+        document.getElementById('newKeyPassword').value = '';
+        setStatus('秘钥已新增');
+        await loadPasskeys();
+      } catch (e) {
+        setStatus(e.message);
+      }
+    });
+
+    document.getElementById('passkeyBody').addEventListener('click', async (e) => {
+      const agentTree = e.target.getAttribute('data-agent-tree');
+      if (agentTree) {
+        openAgentTreeDialog2(Number(agentTree), e.target.getAttribute('data-agent-name') || '');
+        return;
+      }
+      const toggleId = e.target.getAttribute('data-toggle-id');
+      const next = e.target.getAttribute('data-next');
+      const resetId = e.target.getAttribute('data-reset-id');
+      const delId = e.target.getAttribute('data-del-id');
+      try {
+        if (toggleId) {
+          await api('admin_passkey_update', { id: Number(toggleId), status: Number(next) === 1 });
+          setStatus('状态已更新');
+          await loadPasskeys();
+          return;
+        }
+        if (resetId) {
+          const pwd = window.prompt('请输入新的秘钥密码（至少4位）');
+          if (!pwd) return;
+          await api('admin_passkey_update', { id: Number(resetId), password: pwd });
+          setStatus('密码已重置');
+          await loadPasskeys();
+          return;
+        }
+        if (delId) {
+          if (!window.confirm('确定删除该秘钥？')) return;
+          await api('admin_passkey_delete', { id: Number(delId) });
+          setStatus('秘钥已删除');
+          await loadPasskeys();
+        }
+      } catch (err) {
+        setStatus(err.message);
+      }
+    });
+
+    document.getElementById('btnLoadStats').addEventListener('click', async () => {
+      try {
+        await reloadDataView();
+        setStatus('【' + (getAdminBallScope() === 'pingma' ? '平码' : '特码') + '】统计与记录已刷新');
+      } catch (e) {
+        setStatus(e.message);
+      }
+    });
+
+    document.getElementById('btnLoadList').addEventListener('click', async () => {
+      try {
+        await loadList();
+      } catch (e) {
+        setStatus(e.message);
+      }
+    });
+
+    document.getElementById('btnLoadAgents').addEventListener('click', () => loadAdminAgents());
+    document.getElementById('btnAddAgent').addEventListener('click', async () => {
+      const pid = parseInt(document.getElementById('passIdFilter').value, 10);
+      const name = document.getElementById('adminAgentName').value.trim();
+      const pwd = document.getElementById('adminAgentPassword').value;
+      if (!Number.isFinite(pid) || pid <= 0) {
+        setStatus('请先选择渠道');
+        return;
+      }
+      if (!name) {
+        setStatus('请输入代理名称');
+        return;
+      }
+      if (agentPasswordRequired && (!pwd || pwd.length < 4)) {
+        setStatus('请填写代理登录密码（至少4位），或先点「加载代理与收款汇总」同步状态');
+        return;
+      }
+      try {
+        const body = { passId: pid, name, parentId: 0 };
+        if (pwd && pwd.length >= 4) body.password = pwd;
+        await api('admin_distributor_add', body);
+        document.getElementById('adminAgentName').value = '';
+        document.getElementById('adminAgentPassword').value = '';
+        setStatus('代理已添加');
+        await loadAdminAgents();
+      } catch (e) {
+        setStatus(e.message);
+      }
+    });
+    document.getElementById('agentRegBody').addEventListener('click', async (e) => {
+      const id = e.target && e.target.getAttribute ? e.target.getAttribute('data-del-agent') : null;
+      if (!id) return;
+      if (!window.confirm('确定删除该代理登记？历史提交仍保留当时的代理名称。')) return;
+      const pid = parseInt(document.getElementById('passIdFilter').value, 10);
+      if (!pid) {
+        setStatus('请先选择渠道');
+        return;
+      }
+      try {
+        await api('admin_distributor_delete', { id: Number(id), passId: pid });
+        setStatus('已删除');
+        await loadAdminAgents();
+      } catch (err) {
+        setStatus(err.message);
+      }
+    });
+
+    bootstrapAdminBySession();
+  </script>
+</body>
+</html>
+

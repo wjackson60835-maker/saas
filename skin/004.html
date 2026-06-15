@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>KJTB Example</title>
+<style>
+.KJ-TabBox { height: 166px; overflow: hidden; color:#333; background: #fff; font-family: 'PingFang SC', 'microsoft yahei', arial, 'helvetica neue', 'hiragino sans gb', sans-serif;}
+.KJ-TabBox ul,.KJ-TabBox li{margin:0;list-style:none;padding:0;border:0;font-size: 18px;}
+.KJ-TabBox ul { display: flex; height: 36px; padding: 8px 0 0 8px; box-sizing: border-box; border-bottom: solid 2px #FFF;}
+.KJ-TabBox li{ flex: 1; height: 26px; line-height: 26px; margin-right: 8px; text-align: center; border-radius: 4px; background: #eee; cursor: pointer;}
+.KJ-TabBox li.cur{ color: #fff; background: #FF9900;}
+.KJ-TabBox li:nth-child(1).cur { background: #1FB61D;}
+.KJ-TabBox li:nth-child(2).cur { background: #E71607;}
+.KJ-TabBox li:nth-child(3).cur { background: #2389E9;}
+.KJ-TabBox li:nth-child(4).cur { background: #B907C1;}
+.KJ-TabBox div{display:none;}
+.KJ-TabBox div.cur{display:block!important;}
+.KJ-TabBox .KJ-IFRAME{}
+@media screen and (max-width: 650px) {
+.KJ-TabBox ul,.KJ-TabBox li { font-size: 16px;}
+}
+</style>
+<style id="tsbrowser_video_independent_player_style" type="text/css">
+      [tsbrowser_force_max_size] {
+        width: 100% !important;
+        height: 100% !important;
+        left: 0px !important;
+        top: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        transform: none !important;
+      }
+      [tsbrowser_force_fixed] {
+        position: fixed !important;
+        z-index: 9999 !important;
+        background: black !important;
+      }
+      [tsbrowser_force_hidden] {
+        opacity: 0 !important;
+        z-index: 0 !important;
+      }
+      [tsbrowser_hide_scrollbar] {
+        overflow: hidden !important;
+      }
+      [tsbrowser_display_none] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      [tsbrowser_force_show] {
+        display: black !important;
+        visibility: visible !important;
+        opacity: 0;
+      }</style></head>
+<body>
+    <div class="KJ-TabBox">
+        <ul style="width: 25%;">
+            <li data-url="/skin/zokj.html?v=20260401" data-type="xincai" class="cur">新港彩</li>
+        </ul>
+        <iframe class="KJ-IFRAME" width="100%" height="auto" frameborder="0" scrolling="no" src="/skin/zokj.html?v=20260401"></iframe>
+    </div>
+    
+    <script>
+    (function() {
+        var tabs = document.querySelectorAll('.KJ-TabBox li');
+        var frame = document.querySelector('.KJ-TabBox .KJ-IFRAME');
+        var urlParams = new URLSearchParams(window.location.search);
+        var url = urlParams.get('url');
+        var type = urlParams.get('type');
+    
+        tabs.forEach(function(tab) {
+            var tabUrl = tab.getAttribute('data-url') ;
+            tab.setAttribute('data-url', tabUrl);
+            if (tab.getAttribute('data-type') === type) {
+                tab.classList.add('cur');
+                frame.src = tabUrl;
+            }
+    
+            tab.addEventListener('click', function() {
+                tabs.forEach(function(innerTab) {
+                    innerTab.classList.remove('cur');
+                });
+    
+                var url = tab.getAttribute('data-url');
+                frame.src = url;
+                tab.classList.add('cur');
+            });
+        });
+    
+        if (!type && tabs.length > 0) {
+            tabs[0].click();  // Trigger click on first tab to load the initial iframe if no type specified
+        }
+    })();
+    </script>
+    
+    
+
+</body></html>

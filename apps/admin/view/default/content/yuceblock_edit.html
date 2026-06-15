@@ -1,0 +1,262 @@
+{include file='common/head.html'}
+<style>
+/* 特区块双编辑器：保证 UEditor 工具栏按整行排版（避免在窄宽下挤成竖条） */
+.yuce-ueditor-host { width: 100%; max-width: 100%; box-sizing: border-box; }
+.yuce-ueditor-host .edui-default .edui-editor { box-sizing: border-box; }
+</style>
+
+<div class="layui-body">
+	<div class="layui-tab layui-tab-brief" lay-filter="tab">
+	  <ul class="layui-tab-title">
+	    <li class="layui-this">{if([$mod])}修改区块项{else}添加区块项{/if}</li>
+	    <li><a href="{url./admin/YuceBlock/index}">返回列表</a></li>
+	  </ul>
+	  <div class="layui-tab-content">
+	  	<div class="layui-tab-item layui-show">
+
+	  		{if([$mod])}
+	  		<form action="{url./admin/YuceBlock/mod/id/'.[$get.id].'}" method="post" class="layui-form" id="edit">
+	  		{else}
+	  		<form action="{url./admin/YuceBlock/add}" method="post" class="layui-form" id="edit">
+	  		{/if}
+	  		 	<input type="hidden" name="formcheck" value="{$formcheck}" >
+	  		 	<blockquote class="layui-elem-quote" style="margin-bottom:18px;">控制<strong>接口返回的开奖列表</strong>（如「097期:…【琴棋书画】…」整块表格里每一行的字色与背景）：请填下方「开奖列表字色 / 背景」。须从左侧菜单进入<strong>特区块</strong>（开奖预测区块）再点「修改」；勿在「内容管理」里编辑同一条，以免其它字段被覆盖。</blockquote>
+
+	  		 	<div class="layui-form-item">
+                     <label class="layui-form-label">所属栏目</label>
+                     <div class="layui-input-block">
+                     	<input type="text" readonly class="layui-input layui-disabled" style="max-width:400px;" value="{$sort->name}（scode={$scode}）">
+                     </div>
+                </div>
+
+                <div class="layui-form-item">
+                     <label class="layui-form-label">主标题黄字</label>
+                     <div class="layui-input-block">
+                     	<input type="text" name="yuce_brand" value="{$row->source}" placeholder="本条黄色前缀，如：快乐天天彩；留空则用栏目描述1 / 兜底品牌" class="layui-input" style="max-width:520px;">
+                     	<div class="layui-form-mid layui-word-aux">对应内容表 source 字段，每条独立；与全局「兜底品牌」不冲突。</div>
+                     </div>
+                </div>
+
+                <div class="layui-form-item">
+                     <label class="layui-form-label">标题</label>
+                     <div class="layui-input-block">
+                     	<input type="text" name="title" required lay-verify="required" value="{$row->title}" placeholder="绿色【】内文案，如：【三头中特】" class="layui-input" style="max-width:520px;">
+                     </div>
+                </div>
+
+                <div class="layui-form-item">
+                     <label class="layui-form-label">容器ID</label>
+                     <div class="layui-input-block">
+                     	<input type="text" name="subtitle" value="{$row->subtitle}" placeholder="可留空：保存后自动为 yuce_blk+本条ID，再到 skin/config.js 里 apiwf 第二参数填同一串" class="layui-input" style="max-width:520px;">
+                     	<div class="layui-form-mid layui-word-aux">选填。自定义时须字母开头、仅字母数字下划线；与旧版 config 里手写 id 一致时可继续填原值。</div>
+                     </div>
+                </div>
+
+                <div class="layui-form-item">
+                     <label class="layui-form-label">副标题行</label>
+                     <div class="layui-input-inline" style="width:120px;">
+                     	<select name="keywords">
+                     		<option value="0" {if([$row->keywords]=='0')}selected{/if}>否</option>
+                     		<option value="1" {if([$row->keywords]=='1')}selected{/if}>是</option>
+                     	</select>
+                     </div>
+                     <div class="layui-form-mid layui-word-aux">为「是」时显示第二行蓝色横幅（方位肖等）。</div>
+                </div>
+
+                <div class="layui-form-item">
+                     <label class="layui-form-label">标题横条背景</label>
+                     <div class="layui-input-block">
+                     	<input type="color" id="yuce_item_pick_title" title="取色" style="width:44px;height:32px;padding:0;vertical-align:middle;border:1px solid #e6e6e6;cursor:pointer;">
+                     	<input type="text" name="titlecolor" id="yuce_item_inp_title" value="{$row->titlecolor}" class="layui-input layui-input-inline" style="width:140px;margin-left:8px;" placeholder="#2196F3" maxlength="7" autocomplete="off">
+                     	<div class="layui-form-mid layui-word-aux">整条蓝色横条（含「快乐天天彩」+【玩法名】）的背景色；存 titlecolor。留空保存为默认蓝。</div>
+                     </div>
+                </div>
+                <div class="layui-form-item">
+                     <label class="layui-form-label">副标题条背景</label>
+                     <div class="layui-input-block">
+                     	<input type="color" id="yuce_item_pick_sub" title="取色" style="width:44px;height:32px;padding:0;vertical-align:middle;border:1px solid #e6e6e6;cursor:pointer;">
+                     	<input type="text" name="yuce_subbar_bg" id="yuce_item_inp_sub" value="{$row->enclosure}" class="layui-input layui-input-inline" style="width:140px;margin-left:8px;" placeholder="#2196F3" maxlength="7" autocomplete="off">
+                     	<div class="layui-form-mid layui-word-aux">本条「副标题行」横条；特区块专用存 enclosure（勿当附件用）。留空保存为默认蓝。</div>
+                     </div>
+                </div>
+                <script>
+                (function(){
+                	function normHex(v){ v=(v||'').trim(); if(/^#[0-9A-Fa-f]{6}$/.test(v)) return v; if(/^#[0-9A-Fa-f]{3}$/.test(v)) return v; return '#2196F3'; }
+                	var pt=document.getElementById('yuce_item_pick_title'), it=document.getElementById('yuce_item_inp_title');
+                	var ps=document.getElementById('yuce_item_pick_sub'), is=document.getElementById('yuce_item_inp_sub');
+                	if(pt&&it){
+                		var iv=(it.value||'').trim();
+                		if(!iv||iv==='#333333'){ it.value=''; iv='#2196F3'; }
+                		pt.value=normHex(iv);
+                		pt.addEventListener('input',function(){ it.value=pt.value; });
+                		it.addEventListener('change',function(){ pt.value=normHex(it.value||'#2196F3'); });
+                	}
+                	if(ps&&is){
+                		var jv=(is.value||'').trim()||'#2196F3';
+                		ps.value=normHex(jv);
+                		ps.addEventListener('input',function(){ is.value=ps.value; });
+                		is.addEventListener('change',function(){ ps.value=normHex(is.value||'#2196F3'); });
+                	}
+                })();
+                </script>
+
+                <div class="layui-form-item">
+                     <label class="layui-form-label">前缀字色字体</label>
+                     <div class="layui-input-block" style="max-width:720px;">
+                     	<input type="text" name="yuce_font_b_ff" value="{$yuce_font_b_ff}" placeholder="字体，如：微软雅黑 或 Microsoft YaHei,serif" class="layui-input layui-input-inline" style="width:200px;">
+                     	<input type="text" name="yuce_font_b_fs" value="{$yuce_font_b_fs}" placeholder="字号 18px" class="layui-input layui-input-inline" style="width:90px;margin-left:8px;">
+                     	<input type="color" id="yuce_font_b_pick" title="字色" style="width:40px;height:32px;padding:0;vertical-align:middle;border:1px solid #e6e6e6;cursor:pointer;">
+                     	<input type="text" name="yuce_font_b_fc" id="yuce_font_b_fc" value="{$yuce_font_b_fc}" class="layui-input layui-input-inline" style="width:120px;margin-left:6px;" maxlength="7" autocomplete="off">
+                     	<select name="yuce_font_b_fw" class="layui-input layui-input-inline" style="width:100px;margin-left:8px;">
+                     		<option value="bold" {if([$yuce_font_b_fw]=='bold')}selected{/if}>粗体</option>
+                     		<option value="normal" {if([$yuce_font_b_fw]=='normal')}selected{/if}>常规</option>
+                     		<option value="500" {if([$yuce_font_b_fw]=='500')}selected{/if}>500</option>
+                     		<option value="600" {if([$yuce_font_b_fw]=='600')}selected{/if}>600</option>
+                     		<option value="800" {if([$yuce_font_b_fw]=='800')}selected{/if}>800</option>
+                     	</select>
+                     	<div class="layui-form-mid layui-word-aux">横条左侧前缀（如「快乐天天彩」）的字色/字号等；存 pics JSON。</div>
+                     </div>
+                </div>
+                <div class="layui-form-item">
+                     <label class="layui-form-label">标题字色字体</label>
+                     <div class="layui-input-block" style="max-width:720px;">
+                     	<input type="text" name="yuce_font_t_ff" value="{$yuce_font_t_ff}" placeholder="字体" class="layui-input layui-input-inline" style="width:200px;">
+                     	<input type="text" name="yuce_font_t_fs" value="{$yuce_font_t_fs}" placeholder="字号 18px" class="layui-input layui-input-inline" style="width:90px;margin-left:8px;">
+                     	<input type="color" id="yuce_font_t_pick" title="字色" style="width:40px;height:32px;padding:0;vertical-align:middle;border:1px solid #e6e6e6;cursor:pointer;">
+                     	<input type="text" name="yuce_font_t_fc" id="yuce_font_t_fc" value="{$yuce_font_t_fc}" class="layui-input layui-input-inline" style="width:120px;margin-left:6px;" maxlength="7" autocomplete="off">
+                     	<select name="yuce_font_t_fw" class="layui-input layui-input-inline" style="width:100px;margin-left:8px;">
+                     		<option value="bold" {if([$yuce_font_t_fw]=='bold')}selected{/if}>粗体</option>
+                     		<option value="normal" {if([$yuce_font_t_fw]=='normal')}selected{/if}>常规</option>
+                     		<option value="500" {if([$yuce_font_t_fw]=='500')}selected{/if}>500</option>
+                     		<option value="600" {if([$yuce_font_t_fw]=='600')}selected{/if}>600</option>
+                     		<option value="800" {if([$yuce_font_t_fw]=='800')}selected{/if}>800</option>
+                     	</select>
+                     	<div class="layui-form-mid layui-word-aux">横条上玩法标题（如【琴棋书画】）的字色/字号等；与前缀可分别设置。</div>
+                     </div>
+                </div>
+                <script>
+                (function(){
+                	function normHex(v){ v=(v||'').trim(); if(/^#[0-9A-Fa-f]{6}$/.test(v)) return v; if(/^#[0-9A-Fa-f]{3}$/.test(v)) return v; return '#2196F3'; }
+                	var pb=document.getElementById('yuce_font_b_pick'), ib=document.getElementById('yuce_font_b_fc');
+                	var pt=document.getElementById('yuce_font_t_pick'), it=document.getElementById('yuce_font_t_fc');
+                	if(pb&&ib){
+                		var v=(ib.value||'').trim()||'#faff00';
+                		pb.value=normHex(v);
+                		pb.addEventListener('input',function(){ ib.value=pb.value; });
+                		ib.addEventListener('change',function(){ pb.value=normHex(ib.value||'#faff00'); });
+                	}
+                	if(pt&&it){
+                		var w=(it.value||'').trim()||'#c5ffda';
+                		pt.value=normHex(w);
+                		pt.addEventListener('input',function(){ it.value=pt.value; });
+                		it.addEventListener('change',function(){ pt.value=normHex(it.value||'#c5ffda'); });
+                	}
+                })();
+                </script>
+
+                <div class="layui-form-item">
+                     <label class="layui-form-label">列表行字色</label>
+                     <div class="layui-input-block">
+                     	<input type="color" id="yuce_list_pick_fc" title="字色" style="width:44px;height:32px;padding:0;vertical-align:middle;border:1px solid #e6e6e6;cursor:pointer;">
+                     	<input type="text" name="yuce_list_fc" id="yuce_list_inp_fc" value="{$yuce_list_fc}" class="layui-input layui-input-inline" style="width:140px;margin-left:8px;" placeholder="#000000 留空则三色格默认" maxlength="7" autocomplete="off">
+                     	<div class="layui-form-mid layui-word-aux">接口返回的开奖列表每一行文字颜色；与「列表行背景」任填或全填；存 tags JSON（lf）。留空不覆盖模板默认样式。</div>
+                     </div>
+                </div>
+                <div class="layui-form-item">
+                     <label class="layui-form-label">列表行背景</label>
+                     <div class="layui-input-block">
+                     	<input type="color" id="yuce_list_pick_bg" title="背景" style="width:44px;height:32px;padding:0;vertical-align:middle;border:1px solid #e6e6e6;cursor:pointer;">
+                     	<input type="text" name="yuce_list_bg" id="yuce_list_inp_bg" value="{$yuce_list_bg}" class="layui-input layui-input-inline" style="width:140px;margin-left:8px;" placeholder="#ffffff 留空则三色格默认" maxlength="7" autocomplete="off">
+                     	<div class="layui-form-mid layui-word-aux">每一行单元格背景色；存 tags JSON（lb）。</div>
+                     </div>
+                </div>
+                <script>
+                (function(){
+                	function normHex(v){ v=(v||'').trim(); if(/^#[0-9A-Fa-f]{6}$/.test(v)) return v; if(/^#[0-9A-Fa-f]{3}$/.test(v)) return v; return '#000000'; }
+                	var pf=document.getElementById('yuce_list_pick_fc'), inf=document.getElementById('yuce_list_inp_fc');
+                	var pb=document.getElementById('yuce_list_pick_bg'), inb=document.getElementById('yuce_list_inp_bg');
+                	if(pf&&inf){
+                		var iv=(inf.value||'').trim();
+                		pf.value=iv?normHex(iv):'#000000';
+                		pf.addEventListener('input',function(){ inf.value=pf.value; });
+                		inf.addEventListener('change',function(){ var t=(inf.value||'').trim(); if(t) pf.value=normHex(t); });
+                	}
+                	if(pb&&inb){
+                		var jv=(inb.value||'').trim();
+                		pb.value=jv?normHex(jv):'#ffffff';
+                		pb.addEventListener('input',function(){ inb.value=pb.value; });
+                		inb.addEventListener('change',function(){ var t=(inb.value||'').trim(); if(t) pb.value=normHex(t); });
+                	}
+                })();
+                </script>
+
+                <div class="layui-form-item layui-form-text">
+                     <label class="layui-form-label">副行HTML</label>
+                     <div class="layui-input-block">
+                     	<div class="yuce-ueditor-host">
+                     	<script type="text/plain" id="editor_description" name="description" style="width:100%;min-height:220px;">{fun=decode_string([$row->description])}</script>
+                     	</div>
+                     	<div class="layui-form-mid layui-word-aux" style="margin-top:8px;">与「详情正文」相同可视化编辑器；仅「副标题行」为是时前台显示本段。</div>
+                     </div>
+                </div>
+
+                <div class="layui-form-item layui-form-text">
+                     <label class="layui-form-label">详情正文</label>
+                     <div class="layui-input-block">
+                     	<div class="yuce-ueditor-host">
+                     	<script type="text/plain" id="editor" name="content" style="width:100%;min-height:280px;">{fun=decode_string([$row->content])}</script>
+                     	</div>
+                     </div>
+                </div>
+
+                <div class="layui-form-item">
+                     <label class="layui-form-label">外链</label>
+                     <div class="layui-input-block">
+                     	<input type="text" name="outlink" value="{$row->outlink}" placeholder="可选，非空则主标题跳转此外链" class="layui-input" style="max-width:520px;">
+                     </div>
+                </div>
+
+                <div class="layui-form-item">
+                     <label class="layui-form-label">排序</label>
+                     <div class="layui-input-inline" style="width:120px;">
+                     	<input type="text" name="sorting" value="{$row->sorting}" placeholder="数字越小越靠前" class="layui-input">
+                     </div>
+                     <div class="layui-form-mid layui-word-aux">{if([$mod])}数字越小越靠前。{else}留空则自动排到最前（比当前最小排序值再减 1）。{/if}</div>
+                </div>
+
+                <div class="layui-form-item">
+                     <label class="layui-form-label">发布/定时</label>
+                     <div class="layui-input-inline" style="width:200px;">
+                     	{if([$mod])}
+                     	<input type="text" name="date" value="{$row->date}" readonly placeholder="立即发布或选择未来时间" class="layui-input datetime">
+                     	{else}
+                     	<input type="text" name="date" value="{fun=date('Y-m-d H:i:s')}" readonly placeholder="立即发布或选择未来时间" class="layui-input datetime">
+                     	{/if}
+                     </div>
+                     <div class="layui-form-mid layui-word-aux">与内容管理相同：时间晚于当前时刻则定时发布，前台特区块到点后才显示本条（状态须为「显示」）。</div>
+                </div>
+
+                <div class="layui-form-item">
+                     <label class="layui-form-label">状态</label>
+                     <div class="layui-input-inline" style="width:120px;">
+                     	<select name="status">
+                     		<option value="1" {if([$row->status]=='1')}selected{/if}>显示</option>
+                     		<option value="0" {if([$row->status]=='0')}selected{/if}>隐藏</option>
+                     	</select>
+                     </div>
+                </div>
+
+                <div class="layui-form-item">
+					 <div class="layui-input-block">
+					    <button class="layui-btn" lay-submit>{if([$mod])}保存修改{else}保存添加{/if}</button>
+					    <a href="{url./admin/YuceBlock/index}" class="layui-btn layui-btn-primary">返回</a>
+					 </div>
+				</div>
+	  		 </form>
+
+	  	</div>
+	  </div>
+	</div>
+</div>
+{include file='common/ueditor.html'}
+{include file='common/foot.html'}

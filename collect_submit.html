@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据提交系统</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f7fb; margin: 0; padding: 20px; }
+    .wrap { max-width: 1180px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 14px rgba(0,0,0,.08); padding: 22px; }
+    h2 { margin: 0 0 12px; }
+    .row { margin-bottom: 12px; }
+    label { display: block; margin-bottom: 6px; color: #333; }
+    input, textarea, button { font-size: 14px; }
+    input[type="text"], input[type="password"], textarea {
+      width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;
+    }
+    textarea { min-height: 300px; resize: vertical; font-family: Consolas, "Courier New", monospace; line-height: 1.45; }
+    button { border: 0; border-radius: 4px; padding: 9px 14px; cursor: pointer; background: #1677ff; color: #fff; }
+    button.secondary { background: #666; }
+    .tips { font-size: 13px; color: #666; line-height: 1.7; }
+    .status { margin: 10px 0; padding: 8px; border-radius: 4px; background: #f0f6ff; color: #1d4f9a; }
+    .error { background: #fff2f0; color: #a8071a; }
+    .ok { background: #f6ffed; color: #237804; }
+    .hidden { display: none; }
+    .lottery-box { font-size: 13px; color: #333; background: #f6ffed; border: 1px solid #b7eb8f; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; line-height: 1.6; }
+    .lottery-box code { background: #fff; padding: 1px 6px; border-radius: 3px; }
+    .my-list { margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee; }
+    .my-list h3 { margin: 0 0 10px; font-size: 16px; color: #333; }
+    .my-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .my-table th, .my-table td { border: 1px solid #e8e8e8; padding: 8px 6px; text-align: left; vertical-align: top; }
+    .my-table th { background: #fafafa; }
+    .my-table .num { text-align: right; white-space: nowrap; }
+    .my-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+    .my-sub-text { vertical-align: top; min-width: 120px; max-width: 360px; }
+    .my-sub-text-inner {
+      margin: 0; max-height: 140px; overflow: auto; -webkit-overflow-scrolling: touch;
+      white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;
+      font-size: 12px; line-height: 1.45; font-family: Consolas, "Courier New", monospace;
+      background: #f8f9fa; padding: 6px 8px; border-radius: 4px; text-align: left;
+    }
+    .my-pager { margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #666; }
+    .my-pager button { padding: 6px 12px; font-size: 13px; }
+    @media (max-width: 560px) {
+      body { padding: 10px; }
+      .wrap { padding: 14px; }
+      .my-list h3 { font-size: 15px; }
+      #mySubmissionsTable thead { display: none; }
+      #mySubmissionsTable.my-table { min-width: 0; width: 100%; }
+      #mySubmissionsTable tbody tr {
+        display: block; margin-bottom: 12px; padding: 12px 12px 4px;
+        border: 1px solid #e8e8e8; border-radius: 10px; background: #fafafa;
+        box-shadow: 0 1px 2px rgba(0,0,0,.04);
+      }
+      #mySubmissionsTable tbody td {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 10px; padding: 8px 0; border: none; border-bottom: 1px solid #eee;
+        text-align: right !important; font-size: 13px;
+      }
+      #mySubmissionsTable tbody tr td:last-child { border-bottom: none; padding-bottom: 0; }
+      #mySubmissionsTable tbody td::before {
+        content: attr(data-label); font-weight: 600; color: #666; font-size: 12px;
+        flex-shrink: 0; text-align: left;
+      }
+      #mySubmissionsTable tbody td.my-sub-text {
+        flex-direction: column; align-items: stretch; gap: 6px;
+        text-align: left !important; max-width: none;
+      }
+      #mySubmissionsTable tbody td.my-sub-text::before { align-self: flex-start; }
+      #mySubmissionsTable tbody td.my-sub-text .my-sub-text-inner {
+        max-height: 200px; width: 100%; box-sizing: border-box;
+      }
+      #mySubmissionsTable tbody td.my-sub-actions { flex-wrap: wrap; }
+      #mySubmissionsTable tbody td.my-sub-actions::before { align-self: center; }
+    }
+    .agent-stats-range.active { background: #1677ff !important; color: #fff !important; }
+    .btn-danger { background: #ff4d4f; }
+    .btn-danger:hover { filter: brightness(0.98); }
+
+    /* 模态框 */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 10000;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px; box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.45);
+      -webkit-backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
+    }
+    .modal-backdrop.hidden { display: none; }
+    .modal-dialog {
+      width: 100%; max-width: 420px;
+      background: #fff; border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+      animation: modalIn 0.2s ease-out;
+    }
+    .modal-dialog--wide { max-width: min(560px, 96vw); }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.96) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-backdrop--error .modal-head { border-left: 4px solid #ff4d4f; color: #a8071a; }
+    .modal-backdrop--ok .modal-head { border-left: 4px solid #52c41a; color: #237804; }
+    .modal-head {
+      padding: 14px 16px 10px; font-size: 17px; font-weight: 700;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .modal-body {
+      padding: 14px 16px 18px; font-size: 14px; line-height: 1.65; color: #333;
+      max-height: min(60vh, 320px); overflow-y: auto; word-break: break-word; white-space: pre-wrap;
+    }
+    .modal-foot {
+      padding: 0 16px 16px; text-align: right;
+      display: flex; gap: 10px; justify-content: flex-end; align-items: center;
+    }
+    .modal-foot button {
+      min-width: 88px; padding: 8px 18px; font-size: 14px;
+    }
+    .modal-form .modal-body { max-height: none; overflow: visible; white-space: normal; }
+    .modal-form label { display: block; margin-bottom: 4px; font-size: 13px; color: #333; }
+    .modal-form .form-row { margin-bottom: 12px; }
+    .modal-form input[type="password"] { width: 100%; box-sizing: border-box; }
+    .dist-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
+    .dist-row .grow { flex: 1; min-width: 200px; }
+    .dist-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+    /* 特码 / 平码 选项卡 */
+    .submit-tabs {
+      display: flex; gap: 0; margin-bottom: 0;
+      border-bottom: 2px solid #e8e8e8;
+    }
+    .submit-tab {
+      appearance: none; background: transparent; color: #666;
+      border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; padding: 10px 18px; font-size: 15px; font-weight: 600;
+      cursor: pointer; border-radius: 6px 6px 0 0;
+      transition: color .15s, background .15s, border-color .15s;
+    }
+    .submit-tab:hover { color: #1677ff; background: #f5f9ff; }
+    .submit-tab.active {
+      color: #1677ff; background: #f0f6ff;
+      border-bottom-color: #1677ff;
+    }
+    .submit-tab-panel { display: none; padding-top: 14px; }
+    .submit-tab-panel.active { display: block; }
+    .submit-tab-badge {
+      display: inline-block; margin-left: 6px; padding: 1px 7px;
+      font-size: 11px; font-weight: 500; border-radius: 10px; vertical-align: middle;
+    }
+    .submit-tab[data-scope="tema"] .submit-tab-badge { background: #fff7e6; color: #ad6800; }
+    .submit-tab[data-scope="pingma"] .submit-tab-badge { background: #e6f4ff; color: #0958d9; }
+    .scope-tips {
+      font-size: 13px; color: #666; line-height: 1.7;
+      background: #fafafa; border: 1px solid #f0f0f0; border-radius: 6px;
+      padding: 10px 12px; margin-top: 10px;
+    }
+    .scope-tips strong { color: #333; }
+    .scope-tips--pingma { background: #f0f6ff; border-color: #d6e4ff; }
+    .pingma-preview-box {
+      margin-top: 10px; padding: 10px 12px;
+      background: #f6ffed; border: 1px solid #b7eb8f; border-radius: 8px;
+    }
+    .pingma-preview-title { font-size: 13px; font-weight: 600; color: #237804; margin-bottom: 6px; }
+    .pingma-preview-content {
+      margin: 0; font-size: 13px; line-height: 1.6; color: #333;
+      white-space: pre-wrap; word-break: break-word;
+      font-family: inherit; background: transparent; border: 0; padding: 0;
+    }
+    .scope-tips--tema { background: #fffbe6; border-color: #ffe58f; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>数据收集提交</h2>
+    <div id="globalStatus" class="status hidden" aria-hidden="true">正在检测提交通道状态...</div>
+    <div id="lotteryBox" class="lottery-box hidden" aria-hidden="true"></div>
+
+    <div id="loginPanel">
+      <div class="row">
+        <label for="username">用户名</label>
+        <input id="username" type="text" maxlength="128" autocomplete="username" placeholder="渠道名 或 代理ID（纯数字）或 渠道名@代理名">
+      </div>
+      <div class="row">
+        <label for="password">密码</label>
+        <input id="password" type="password" maxlength="200" autocomplete="current-password" placeholder="渠道秘钥 或 代理登录密码">
+        <p class="tips" style="margin-top:6px;"><strong>渠道主</strong>：用户名 = 后台「秘钥」里的<strong>渠道名称</strong>，密码 = 渠道秘钥密码。<strong>下属代理</strong>（任选一种）：① 用户名填分销列表里的 <strong># 后纯数字编号</strong>（不是登记名称里的数字）；② 用户名 = 与登记<strong>完全一致</strong>的代理名称（若代理名叫「123456」则整段填 123456）；③ <code>渠道名称@代理登记名</code>。密码均为添加代理时所设（≥4 位）。若提示未设置密码，需渠道主重新添加或后台补录哈希列后重设。</p>
+      </div>
+      <button id="btnLogin">登录</button>
+    </div>
+
+    <div id="submitPanel" class="hidden">
+      <div class="row">
+        <label>期号（与 <code>ay_kjdata.number</code> 一致，如 <code>2026098</code>；有开奖表时默认带出<strong>下期</strong>；无表时才用 8 位日期）</label>
+        <input id="periodNo" type="text" autocomplete="off" placeholder="例：2026099 或 20260410（官方 7 位优先）">
+      </div>
+      <div id="distributorWrap" class="row hidden">
+        <label>二级分销（本次提交归属）</label>
+        <div class="dist-row">
+          <div class="grow">
+            <select id="distributorSelect" style="width:100%;max-width:420px;padding:8px;font-size:14px;">
+              <option value="">（不指定 / 汇总为未指定）</option>
+            </select>
+          </div>
+          <div class="dist-tools">
+            <div id="distChannelTools" class="dist-tools" style="margin:0;">
+              <input id="newDistributorName" type="text" maxlength="40" placeholder="新分销名称" style="width:160px;padding:8px;">
+              <input id="newDistributorPassword" type="password" maxlength="200" placeholder="代理密码≥4位" style="width:140px;padding:8px;" autocomplete="new-password">
+              <button type="button" id="btnDistributorAdd" class="secondary">添加分销</button>
+            </div>
+            <button type="button" id="btnDistributorRefresh" class="secondary">刷新列表</button>
+          </div>
+        </div>
+        <div class="tips" style="margin-top:4px;" id="distributorTipsChannel">可在本页添加<strong>顶级</strong>分销（已升级库时需填<strong>代理密码</strong>至少4位）；下方表格可<strong>编辑名称/代理密码</strong>或<strong>删除</strong>（含下级一并删）。多级结构也可由管理员在后台「秘钥」行维护。提交前在下拉选择（选项为层级路径）。</div>
+        <div class="tips hidden" style="margin-top:4px;color:#0958d9;" id="distributorTipsAgent">当前为<strong>代理登录</strong>：提交归属仅为<strong>本人</strong>；统计与「我的提交」仅包含<strong>本人及下级代理</strong>的数据，不含上级或其它同级。不可在本页新增/删除分销。</div>
+        <div id="distributorManageWrap" class="hidden" style="margin-top:12px;">
+          <div style="font-size:14px;margin-bottom:6px;color:#333;">分销管理（仅渠道主）</div>
+          <table class="my-table" style="font-size:13px;">
+            <thead>
+              <tr>
+                <th>层级/名称</th>
+                <th class="num">#ID</th>
+                <th>已设代理密</th>
+                <th class="num" style="min-width:140px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="distributorManageBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="row">
+        <label>提交内容</label>
+        <div class="submit-tabs" role="tablist" aria-label="提交类型">
+          <button type="button" class="submit-tab active" role="tab" id="tabTema" data-scope="tema" aria-selected="true" aria-controls="panelTema">
+            特码<span class="submit-tab-badge">各号/各肖</span>
+          </button>
+          <button type="button" class="submit-tab" role="tab" id="tabPingma" data-scope="pingma" aria-selected="false" aria-controls="panelPingma">
+            平码<span class="submit-tab-badge">复式/连肖</span>
+          </button>
+        </div>
+
+        <div id="panelTema" class="submit-tab-panel active" role="tabpanel" aria-labelledby="tabTema">
+          <textarea id="rawTextTema" placeholder="特码示例：&#10;01,02,03,04,05,06,07各100&#10;12/23/34各100（斜杠与逗号等价）&#10;01,02,03,04,05,06各50,07,各100&#10;虎猴狗各肖100元"></textarea>
+          <div class="scope-tips scope-tips--tema">
+            <div><strong>特码</strong>：对照开奖 <strong>第 7 个球</strong>；解析后顺序 <strong>最后一条</strong> 为特码，其余为正码。</div>
+            <div>- 标准格式：<code>01,02,03,04,05,06,07各100</code> 或 <code>01,02各100园</code>（逗号 +「各」+ 金额）</div>
+            <div>- 斜杠格式：<code>12/23/34各100</code> 与逗号分隔相同</div>
+            <div>- 波色单双：<code>红单各</code> <code>红双各</code> <code>蓝单各</code> <code>蓝双各</code> <code>绿单各</code> <code>绿双各</code></div>
+            <div>- 合数单双：<code>合单各</code> <code>合双各</code></div>
+            <div>- 大小：<code>小数各</code>（01–24）；<code>大数各</code>（25–49）</div>
+            <div>- 生肖：<code>虎猴狗各肖100元</code>、<code>虎马各数100米</code>（<code>各数</code>=<code>各号</code>）</div>
+            <div>- 金额：正整数；单次最多 3000 条明细</div>
+          </div>
+        </div>
+
+        <div id="panelPingma" class="submit-tab-panel" role="tabpanel" aria-labelledby="tabPingma">
+          <textarea id="rawTextPingma" placeholder="平码示例：&#10;二中二 01-02 100元&#10;复式二中二 08-18-25 50元&#10;三中三 01-02-14 20元&#10;复式三中三 08-17-45-28 20元&#10;四肖 马狗蛇猴 1元&#10;三连肖猴猪马 100元"></textarea>
+          <div id="pingmaPreviewBox" class="pingma-preview-box hidden" aria-live="polite">
+            <div class="pingma-preview-title">平码预览</div>
+            <pre id="pingmaPreviewContent" class="pingma-preview-content"></pre>
+          </div>
+          <div class="scope-tips scope-tips--pingma">
+            <div><strong>平码</strong>：对照开奖 <strong>前 6 个正码</strong>；按 <strong>组</strong> 计费，不是「各号各多少」。</div>
+            <div>- <strong>二中二</strong>：2～<strong>7</strong> 个号（超过 7 个不可提交），组数 C(n,2)，例 <code>二中二 01-02 100元</code></div>
+            <div>- <strong>三中三</strong>：3～<strong>7</strong> 个号（超过 7 个不可提交），组数 C(n,3)</div>
+            <div>- <strong>复式</strong>：选 3 个号及以上自动按组数计费；号码玩法行尾金额即<strong>每组</strong>单价（<strong>不必写「各」</strong>），如 <code>复式二中二 08-18-25 50元</code></div>
+            <div>- <strong>肖类</strong>：单条最多 <strong>5</strong> 个生肖（超过不可提交）；<strong>一肖无复式</strong>，每条只能 1 个肖，例 <code>一肖马各10</code></div>
+            <div>- 支持二肖～五肖、二～五连肖（可复式）；<strong>不支持六肖/七肖</strong></div>
+            <div>- 肖类计费：二肖 C(n,2)、三肖 C(n,3)…；二～四连肖 C(n,2)，五连肖 C(n,5)</div>
+            <div>- 肖类无「各」时行尾为<strong>整单总价</strong>；有「各/各组」为<strong>每组</strong>单价，例 <code>四肖 马狗蛇猴 1元</code> → 1 组 1 元</div>
+            <div>- 平码玩法与特码分开统计</div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <button id="btnSubmit">提交数据</button>
+        <button type="button" id="btnPingmaPreview" class="secondary hidden">平码预览</button>
+        <button type="button" id="btnChangePassword" class="secondary">修改密码</button>
+        <button id="btnLogout" class="secondary">退出登录</button>
+      </div>
+
+      <div id="mySubmissionsWrap" class="my-list hidden">
+        <h3>我的提交记录 <span id="mySubmissionsUser" style="font-weight:400;color:#666;font-size:13px;"></span></h3>
+        <div class="row" id="mySubmissionsFilterWrap" style="margin-bottom:8px;">
+          <div class="dist-row" style="align-items:center;">
+            <div class="grow" style="min-width:160px;">
+              <label for="myFilterUser" style="margin-bottom:4px;">提交用户</label>
+              <select id="myFilterUser" style="width:100%;max-width:220px;padding:8px;font-size:14px;">
+                <option value="">全部用户</option>
+              </select>
+            </div>
+            <div style="min-width:150px;">
+              <label for="myFilterDateStart" style="margin-bottom:4px;">开始日期</label>
+              <input id="myFilterDateStart" type="date" style="padding:8px;font-size:14px;">
+            </div>
+            <div style="min-width:150px;">
+              <label for="myFilterDateEnd" style="margin-bottom:4px;">结束日期</label>
+              <input id="myFilterDateEnd" type="date" style="padding:8px;font-size:14px;">
+            </div>
+            <div style="min-width:140px;">
+              <label for="myFilterPeriodNo" style="margin-bottom:4px;">期号</label>
+              <input id="myFilterPeriodNo" type="text" maxlength="32" placeholder="如 2026116" style="padding:8px;font-size:14px;width:130px;">
+            </div>
+            <div class="dist-tools" style="margin-top:22px;">
+              <button type="button" id="myFilterApply" class="secondary">查询筛选</button>
+              <button type="button" id="myFilterReset" class="secondary">重置</button>
+            </div>
+          </div>
+        </div>
+        <div id="mySubmissionsStatus" class="tips" style="margin-bottom:8px;"></div>
+        <div class="my-table-scroll">
+        <table class="my-table" id="mySubmissionsTable">
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>类型</th>
+              <th>期号</th>
+              <th>提交用户</th>
+              <th class="num">金额</th>
+              <th class="num">条目</th>
+              <th>提交内容</th>
+              <th class="num">操作</th>
+            </tr>
+          </thead>
+          <tbody id="mySubmissionsBody"></tbody>
+        </table>
+        </div>
+        <div class="my-pager hidden" id="mySubmissionsPager">
+          <span id="mySubmissionsPagerInfo"></span>
+          <button type="button" class="secondary" id="mySubmissionsPrev">上一页</button>
+          <button type="button" class="secondary" id="mySubmissionsNext">下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 修改密码 -->
+  <div id="changePasswordModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="changePasswordTitle">
+    <div class="modal-dialog modal-form" id="changePasswordPanel">
+      <div class="modal-head" id="changePasswordTitle">修改安全密码</div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label for="pwdOld">当前密码</label>
+          <input id="pwdOld" type="password" autocomplete="current-password" placeholder="请输入当前安全密码">
+        </div>
+        <div class="form-row">
+          <label for="pwdNew">新密码</label>
+          <input id="pwdNew" type="password" autocomplete="new-password" placeholder="至少 4 位">
+        </div>
+        <div class="form-row">
+          <label for="pwdNew2">确认新密码</label>
+          <input id="pwdNew2" type="password" autocomplete="new-password" placeholder="再次输入新密码">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" id="changePasswordCancel" class="secondary">取消</button>
+        <button type="button" id="changePasswordOk">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 编辑分销（渠道主） -->
+  <div id="distEditModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="distEditTitle">
+    <div class="modal-dialog modal-form" id="distEditPanel">
+      <div class="modal-head" id="distEditTitle">编辑分销</div>
+      <div class="modal-body">
+        <input type="hidden" id="distEditId" value="">
+        <div class="form-row">
+          <label for="distEditName">登记名称</label>
+          <input id="distEditName" type="text" maxlength="40" autocomplete="off" placeholder="1–40 字">
+        </div>
+        <div class="form-row" id="distEditPwdRow">
+          <label for="distEditPwd">代理新密码</label>
+          <input id="distEditPwd" type="password" maxlength="200" autocomplete="new-password" placeholder="留空则不修改；至少 4 位">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" id="distEditCancel" class="secondary">取消</button>
+        <button type="button" id="distEditOk">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提交结果 / 格式错误：模态框 -->
+  <div id="appModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="appModalTitle">
+    <div class="modal-dialog" id="appModalPanel">
+      <div class="modal-head" id="appModalTitle">提示</div>
+      <div class="modal-body" id="appModalMessage"></div>
+      <div class="modal-foot">
+        <button type="button" id="appModalCancel" class="secondary">取消</button>
+        <button type="button" id="appModalBtn">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 优先 collect_submit.php 在 <head> 注入的路径；否则相对当前页；最后退回站点根（子目录部署请用 .php 入口）
+    const apiBase = (typeof window.__COLLECT_API_BASE__ === 'string' && window.__COLLECT_API_BASE__.length > 0)
+      ? window.__COLLECT_API_BASE__
+      : (function () {
+          try {
+            return new URL('ajax/collect/api.php', window.location.href).pathname;
+          } catch (e) {
+            return '/ajax/collect/api.php';
+          }
+        })();
+    const statusEl = document.getElementById('globalStatus');
+    const loginPanel = document.getElementById('loginPanel');
+    const submitPanel = document.getElementById('submitPanel');
+    let currentUserName = '';
+    let featureDistributors = false;
+    let agentPasswordRequired = false;
+    let loginAsAgent = false;
+    let sessionDistributorId = 0;
+    let distributorDisplayName = '';
+
+    const SUBMIT_TAB_STORAGE_KEY = 'collect_submit_active_tab';
+    const tabTemaEl = document.getElementById('tabTema');
+    const tabPingmaEl = document.getElementById('tabPingma');
+    const panelTemaEl = document.getElementById('panelTema');
+    const panelPingmaEl = document.getElementById('panelPingma');
+    const rawTextTemaEl = document.getElementById('rawTextTema');
+    const rawTextPingmaEl = document.getElementById('rawTextPingma');
+    let activeBallScope = 'tema';
+
+    function getActiveBallScope() {
+      return activeBallScope === 'pingma' ? 'pingma' : 'tema';
+    }
+
+    function getActiveRawTextEl() {
+      return getActiveBallScope() === 'pingma' ? rawTextPingmaEl : rawTextTemaEl;
+    }
+
+    function switchSubmitTab(scope) {
+      const next = scope === 'pingma' ? 'pingma' : 'tema';
+      activeBallScope = next;
+      const isTema = next === 'tema';
+      tabTemaEl.classList.toggle('active', isTema);
+      tabPingmaEl.classList.toggle('active', !isTema);
+      tabTemaEl.setAttribute('aria-selected', isTema ? 'true' : 'false');
+      tabPingmaEl.setAttribute('aria-selected', isTema ? 'false' : 'true');
+      panelTemaEl.classList.toggle('active', isTema);
+      panelPingmaEl.classList.toggle('active', !isTema);
+      const prevBtn = document.getElementById('btnPingmaPreview');
+      if (prevBtn) prevBtn.classList.toggle('hidden', isTema);
+      const prevBox = document.getElementById('pingmaPreviewBox');
+      if (prevBox && isTema) prevBox.classList.add('hidden');
+      try {
+        sessionStorage.setItem(SUBMIT_TAB_STORAGE_KEY, next);
+      } catch (e) { /* ignore */ }
+      getActiveRawTextEl().focus();
+    }
+
+    function restoreSubmitTab() {
+      let saved = '';
+      try {
+        saved = sessionStorage.getItem(SUBMIT_TAB_STORAGE_KEY) || '';
+      } catch (e) { /* ignore */ }
+      switchSubmitTab(saved === 'pingma' ? 'pingma' : 'tema');
+    }
+
+    tabTemaEl.addEventListener('click', () => switchSubmitTab('tema'));
+    tabPingmaEl.addEventListener('click', () => switchSubmitTab('pingma'));
+
+    function applySubmitPanelRole() {
+      const ch = document.getElementById('distChannelTools');
+      const tipCh = document.getElementById('distributorTipsChannel');
+      const tipAg = document.getElementById('distributorTipsAgent');
+      const sel = document.getElementById('distributorSelect');
+      if (ch) ch.classList.toggle('hidden', loginAsAgent);
+      if (tipCh) tipCh.classList.toggle('hidden', loginAsAgent);
+      if (tipAg) tipAg.classList.toggle('hidden', !loginAsAgent);
+      if (sel) sel.disabled = !!loginAsAgent;
+    }
+
+    function applySessionFromCollectUser(data) {
+      loginAsAgent = !!data.loginAsAgent;
+      sessionDistributorId = data.distributorId != null ? parseInt(String(data.distributorId), 10) || 0 : 0;
+      distributorDisplayName = (data.distributorName && String(data.distributorName).trim()) || '';
+      applySubmitPanelRole();
+    }
+    // 日期期号（YYYYMMDD）切换点：北京时间 21:31（含）起算次日；与接口 datePeriodCutoffTime 一致
+    let datePeriodCutoffMinute = 21 * 60 + 31;
+
+    async function loadDistributors() {
+      if (!featureDistributors) return;
+      const sel = document.getElementById('distributorSelect');
+      const cur = sel.value;
+      try {
+        const data = await api('user_distributors_list', {});
+        if (typeof data.agentPasswordRequired === 'boolean') {
+          agentPasswordRequired = !!data.agentPasswordRequired;
+        }
+        const rows = data.rows || [];
+        sel.innerHTML = '<option value="">（不指定）</option>';
+        rows.forEach((r) => {
+          if ((r.status ?? 1) !== 1 && r.status !== '1') return;
+          const o = document.createElement('option');
+          o.value = String(r.id);
+          o.textContent = (r.label || r.name || ('#' + r.id));
+          sel.appendChild(o);
+        });
+        if (loginAsAgent && sessionDistributorId > 0) {
+          sel.value = String(sessionDistributorId);
+        } else if (cur && [...sel.options].some((o) => o.value === cur)) {
+          sel.value = cur;
+        }
+        renderDistributorManageTable(rows);
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    function escHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function renderDistributorManageTable(rows) {
+      const wrap = document.getElementById('distributorManageWrap');
+      const tbody = document.getElementById('distributorManageBody');
+      if (!wrap || !tbody) return;
+      if (!featureDistributors || loginAsAgent) {
+        wrap.classList.add('hidden');
+        return;
+      }
+      wrap.classList.remove('hidden');
+      const active = (rows || []).filter((r) => (r.status ?? 1) === 1 || r.status === '1');
+      tbody.innerHTML = active.map((r) => {
+        const id = parseInt(String(r.id), 10) || 0;
+        const label = r.label || r.name || ('#' + id);
+        const hp = Number(r.has_password) === 1 ? '是' : '否';
+        const dn = encodeURIComponent(String(r.name || ''));
+        return (
+          '<tr data-dist-row-id="' + id + '">' +
+          '<td>' + escHtml(label) + '</td>' +
+          '<td class="num">' + id + '</td>' +
+          '<td>' + hp + '</td>' +
+          '<td class="num">' +
+          '<button type="button" class="secondary" data-dist-act="edit" data-dist-id="' + id + '" data-dist-name="' + dn + '" style="margin-right:6px;">编辑</button>' +
+          '<button type="button" class="secondary" data-dist-act="del" data-dist-id="' + id + '">删除</button>' +
+          '</td></tr>'
+        );
+      }).join('');
+    }
+
+    function setStatus(msg, type) {
+      statusEl.textContent = msg;
+      statusEl.className = 'status hidden';
+      if (type === 'error') statusEl.classList.add('error');
+      if (type === 'ok') statusEl.classList.add('ok');
+    }
+
+    const appModalEl = document.getElementById('appModal');
+    const appModalTitleEl = document.getElementById('appModalTitle');
+    const appModalMessageEl = document.getElementById('appModalMessage');
+    const appModalOkBtn = document.getElementById('appModalBtn');
+    const appModalCancelBtn = document.getElementById('appModalCancel');
+    let appModalResolver = null;
+
+    /** 模态框提示（格式错误、提交成功等）；variant: error | ok */
+    function buildPingmaPreviewText(data) {
+      if (!data || typeof data !== 'object') return '';
+      if (data.previewText && String(data.previewText).trim()) {
+        return String(data.previewText);
+      }
+      const formatted = data.formattedText ?? data.formatted_text ?? '';
+      if (formatted && String(formatted).trim()) {
+        return String(formatted);
+      }
+      const lines = (data.previewLines || data.bets || []).map((b) => {
+        if (typeof b === 'string') return b;
+        if (b && b.display_text) return b.display_text;
+        return (b.play_label || '').trim();
+      }).filter((x) => x && String(x).trim());
+      return lines.join('\n');
+    }
+
+    function buildPingmaSubmissionCellText(r) {
+      return (r.formatted_text || r.bet_summary || r.raw_text || '').trim();
+    }
+
+    function renderPingmaPreview(data) {
+      const box = document.getElementById('pingmaPreviewBox');
+      const pre = document.getElementById('pingmaPreviewContent');
+      const text = buildPingmaPreviewText(data);
+      if (!box || !pre) return text;
+      if (!text || !String(text).trim()) {
+        box.classList.add('hidden');
+        pre.textContent = '';
+        return '';
+      }
+      pre.textContent = text;
+      box.classList.remove('hidden');
+      if (activeBallScope !== 'pingma') {
+        switchSubmitTab('pingma');
+      }
+      try {
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (e) { /* ignore */ }
+      return text;
+    }
+
+    function showAppModal(title, message, variant, options) {
+      const opts = options || {};
+      appModalTitleEl.textContent = title || '提示';
+      appModalMessageEl.textContent = message || '';
+      const dialog = appModalEl.querySelector('.modal-dialog');
+      if (dialog) dialog.classList.toggle('modal-dialog--wide', !!opts.wide);
+      appModalEl.classList.remove('hidden');
+      appModalEl.classList.toggle('modal-backdrop--error', variant === 'error');
+      appModalEl.classList.toggle('modal-backdrop--ok', variant === 'ok');
+      appModalCancelBtn.classList.add('hidden');
+      document.body.style.overflow = 'hidden';
+      appModalOkBtn.focus();
+    }
+    function showConfirmModal(title, message, variant) {
+      return new Promise((resolve) => {
+        appModalResolver = resolve;
+        appModalTitleEl.textContent = title || '请确认';
+        appModalMessageEl.textContent = message || '';
+        appModalEl.classList.remove('hidden');
+        appModalEl.classList.toggle('modal-backdrop--error', variant === 'error');
+        appModalEl.classList.toggle('modal-backdrop--ok', variant === 'ok');
+        appModalCancelBtn.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        appModalOkBtn.focus();
+      });
+    }
+    function hideAppModal() {
+      appModalEl.classList.add('hidden');
+      appModalEl.classList.remove('modal-backdrop--error', 'modal-backdrop--ok');
+      document.body.style.overflow = '';
+      const r = appModalResolver;
+      appModalResolver = null;
+      if (typeof r === 'function') r(false);
+    }
+    appModalOkBtn.addEventListener('click', function () {
+      const r = appModalResolver;
+      appModalResolver = null;
+      hideAppModal();
+      if (typeof r === 'function') r(true);
+    });
+    appModalCancelBtn.addEventListener('click', hideAppModal);
+    document.getElementById('appModalPanel').addEventListener('click', function (e) { e.stopPropagation(); });
+    appModalEl.addEventListener('click', function () { hideAppModal(); });
+
+    const changePasswordModal = document.getElementById('changePasswordModal');
+    const pwdOldEl = document.getElementById('pwdOld');
+    const pwdNewEl = document.getElementById('pwdNew');
+    const pwdNew2El = document.getElementById('pwdNew2');
+
+    function openChangePasswordModal() {
+      document.getElementById('changePasswordTitle').textContent = loginAsAgent ? '修改代理登录密码' : '修改安全密码';
+      pwdOldEl.value = '';
+      pwdNewEl.value = '';
+      pwdNew2El.value = '';
+      changePasswordModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      pwdOldEl.focus();
+    }
+    function closeChangePasswordModal() {
+      changePasswordModal.classList.add('hidden');
+      if (appModalEl.classList.contains('hidden')) document.body.style.overflow = '';
+    }
+
+    document.getElementById('btnChangePassword').addEventListener('click', function () {
+      openChangePasswordModal();
+    });
+    document.getElementById('changePasswordCancel').addEventListener('click', closeChangePasswordModal);
+    document.getElementById('changePasswordPanel').addEventListener('click', function (e) { e.stopPropagation(); });
+
+    const distEditModal = document.getElementById('distEditModal');
+    function openDistEditModal(id, leafName) {
+      document.getElementById('distEditId').value = String(id);
+      document.getElementById('distEditName').value = leafName || '';
+      document.getElementById('distEditPwd').value = '';
+      const pr = document.getElementById('distEditPwdRow');
+      if (pr) pr.classList.toggle('hidden', !agentPasswordRequired);
+      distEditModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('distEditName').focus();
+    }
+    function closeDistEditModal() {
+      distEditModal.classList.add('hidden');
+      if (appModalEl.classList.contains('hidden')) document.body.style.overflow = '';
+    }
+    document.getElementById('distEditCancel').addEventListener('click', closeDistEditModal);
+    document.getElementById('distEditPanel').addEventListener('click', function (e) { e.stopPropagation(); });
+    distEditModal.addEventListener('click', function () { closeDistEditModal(); });
+    document.getElementById('distEditOk').addEventListener('click', async function () {
+      const id = parseInt(document.getElementById('distEditId').value, 10) || 0;
+      const name = document.getElementById('distEditName').value.trim();
+      const pwd = document.getElementById('distEditPwd').value.trim();
+      if (id <= 0) {
+        closeDistEditModal();
+        return;
+      }
+      if (!name) {
+        showAppModal('提示', '请输入登记名称', 'error');
+        return;
+      }
+      if (agentPasswordRequired && pwd && pwd.length < 4) {
+        showAppModal('提示', '新密码至少 4 位，或留空不改', 'error');
+        return;
+      }
+      const body = { id, name };
+      if (pwd) body.password = pwd;
+      try {
+        await api('user_distributor_update', body);
+        closeDistEditModal();
+        await loadDistributors();
+        showAppModal('已保存', '分销信息已更新', 'ok');
+        setStatus('分销已更新', 'ok');
+      } catch (e) {
+        showAppModal('保存失败', e.message || '失败', 'error');
+      }
+    });
+
+    document.getElementById('distributorManageBody').addEventListener('click', async function (e) {
+      const btn = e.target.closest('[data-dist-act]');
+      if (!btn) return;
+      const id = parseInt(btn.getAttribute('data-dist-id'), 10) || 0;
+      const act = btn.getAttribute('data-dist-act');
+      if (id <= 0) return;
+      if (act === 'edit') {
+        let leaf = '';
+        try {
+          leaf = decodeURIComponent(btn.getAttribute('data-dist-name') || '');
+        } catch (err) {
+          leaf = '';
+        }
+        openDistEditModal(id, leaf);
+        return;
+      }
+      if (act === 'del') {
+        const ok = await showConfirmModal('确认删除', '将删除该分销及其下级代理（若有），不可恢复。确定吗？', 'error');
+        if (!ok) return;
+        try {
+          await api('user_distributor_delete', { id });
+          await loadDistributors();
+          showAppModal('已删除', '分销已删除', 'ok');
+          setStatus('分销已删除', 'ok');
+        } catch (err) {
+          showAppModal('删除失败', err.message || '失败', 'error');
+        }
+      }
+    });
+    changePasswordModal.addEventListener('click', function () { closeChangePasswordModal(); });
+    document.getElementById('changePasswordOk').addEventListener('click', async function () {
+      const oldPassword = pwdOldEl.value;
+      const newPassword = pwdNewEl.value.trim();
+      const newPassword2 = pwdNew2El.value.trim();
+      if (!oldPassword) {
+        showAppModal('提示', '请输入当前密码', 'error');
+        return;
+      }
+      if (!newPassword) {
+        showAppModal('提示', '请输入新密码', 'error');
+        return;
+      }
+      if (newPassword.length < 4) {
+        showAppModal('提示', '新密码至少 4 位', 'error');
+        return;
+      }
+      if (newPassword !== newPassword2) {
+        showAppModal('提示', '两次输入的新密码不一致', 'error');
+        return;
+      }
+      try {
+        await api('user_change_password', { oldPassword: oldPassword.trim(), newPassword });
+        closeChangePasswordModal();
+        showAppModal('修改成功', '密码已更新，下次登录请使用新密码。', 'ok');
+        setStatus('密码已修改', 'ok');
+      } catch (e) {
+        const msg = e && e.message ? e.message : '修改失败';
+        showAppModal('无法修改', msg, 'error');
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (!changePasswordModal.classList.contains('hidden')) {
+        closeChangePasswordModal();
+        return;
+      }
+      if (!appModalEl.classList.contains('hidden')) {
+        hideAppModal();
+      }
+    });
+
+    let mySubmissionsPage = 1;
+    const mySubmissionsPageSize = 20;
+    let lastPingmaPreviewData = null;
+
+    function isPingmaSubmissionRow(r) {
+      if (!r || typeof r !== 'object') return false;
+      if (r.ball_scope === 'pingma') return true;
+      const raw = String(r.raw_text || '');
+      return /(?:二中二|三中三|连肖|复式)/u.test(raw);
+    }
+
+    function rememberPingmaPreview(data) {
+      if (data && typeof data === 'object' && (data.previewText || data.formattedText || data.formatted_text || (data.bets && data.bets.length))) {
+        lastPingmaPreviewData = data;
+      }
+    }
+    let myFilterSubmitUser = '';
+    let myFilterDateStart = '';
+    let myFilterDateEnd = '';
+    let myFilterPeriodNo = '';
+    function getSubmitUserNameByCurrentSelection() {
+      if (loginAsAgent && distributorDisplayName) return distributorDisplayName;
+      return currentUserName || '';
+    }
+
+    async function api(action, body) {
+      const resp = await fetch(apiBase + '?action=' + encodeURIComponent(action), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {})
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.ok) {
+        throw new Error(data.message || '请求失败');
+      }
+      return data;
+    }
+
+    async function fetchMySubmissionsPage(page) {
+      const qs = [
+        'action=user_my_submissions',
+        'page=' + encodeURIComponent(String(page)),
+        'pageSize=' + encodeURIComponent(String(mySubmissionsPageSize))
+      ];
+      if (myFilterSubmitUser) qs.push('submitUserName=' + encodeURIComponent(myFilterSubmitUser));
+      if (myFilterDateStart) qs.push('dateStart=' + encodeURIComponent(myFilterDateStart));
+      if (myFilterDateEnd) qs.push('dateEnd=' + encodeURIComponent(myFilterDateEnd));
+      if (myFilterPeriodNo) qs.push('periodNo=' + encodeURIComponent(myFilterPeriodNo));
+      const u = apiBase + '?' + qs.join('&');
+      const resp = await fetch(u, { method: 'GET', credentials: 'same-origin' });
+      const data = await resp.json();
+      if (resp.status === 401 || !data.ok) {
+        throw new Error(data.message || '加载我的记录失败');
+      }
+      return data;
+    }
+
+    function renderMySubmissionFilterOptions(data) {
+      const sel = document.getElementById('myFilterUser');
+      const cur = myFilterSubmitUser;
+      const opts = Array.isArray(data.submitUserOptions) ? data.submitUserOptions : [];
+      sel.innerHTML = '<option value="">全部用户</option>';
+      opts.forEach((name) => {
+        const n = String(name || '').trim();
+        if (!n) return;
+        const o = document.createElement('option');
+        o.value = n;
+        o.textContent = n;
+        sel.appendChild(o);
+      });
+      if (cur && [...sel.options].some((o) => o.value === cur)) {
+        sel.value = cur;
+      } else {
+        sel.value = '';
+      }
+    }
+
+    function renderMySubmissions(data) {
+      const wrap = document.getElementById('mySubmissionsWrap');
+      const body = document.getElementById('mySubmissionsBody');
+      const statusEl = document.getElementById('mySubmissionsStatus');
+      const userSpan = document.getElementById('mySubmissionsUser');
+      const pager = document.getElementById('mySubmissionsPager');
+      const pagerInfo = document.getElementById('mySubmissionsPagerInfo');
+      wrap.classList.remove('hidden');
+      if (loginAsAgent && distributorDisplayName) {
+        userSpan.textContent = '（' + (data.key_name || '') + ' / 代理 ' + distributorDisplayName + '）';
+      } else {
+        userSpan.textContent = data.key_name ? '（' + data.key_name + '）' : '';
+      }
+      const total = data.total || 0;
+      const summary = data.summary || { submissionCount: 0, totalAmount: 0, totalItems: 0 };
+      if (total === 0) {
+        statusEl.textContent = '暂无提交记录；统计：单数 ' + (summary.submissionCount || 0) + '，金额 ' + (summary.totalAmount || 0) + '，条目 ' + (summary.totalItems || 0) + '。';
+        body.innerHTML = '';
+        pager.classList.add('hidden');
+        return;
+      }
+      const from = (data.page - 1) * data.pageSize + 1;
+      const to = from + (data.rows || []).length - 1;
+      statusEl.textContent = '共 ' + total + ' 条，本页第 ' + from + '–' + to + ' 条；统计：单数 ' + (summary.submissionCount || 0) + '，金额 ' + (summary.totalAmount || 0) + '，条目 ' + (summary.totalItems || 0) + '。';
+      body.innerHTML = (data.rows || []).map((r) => {
+        const t = (r.created_at || '').replace('T', ' ').slice(0, 19);
+        const submitUser = escHtml(r.submit_user_name || '');
+        const isPingma = isPingmaSubmissionRow(r);
+        const textContent = isPingma
+          ? escHtml(buildPingmaSubmissionCellText(r))
+          : escHtml(r.raw_text || '');
+        const itemsCell = isPingma ? '—' : (r.total_items ?? '');
+        const amountCell = isPingma ? '—' : (r.total_amount ?? '');
+        const typeTag = isPingma
+          ? '<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:12px;background:#e6f4ff;color:#0958d9;">平码</span>'
+          : '<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:12px;background:#fff7e6;color:#ad6800;">特码</span>';
+        const delBtn = '<button type="button" class="btn-danger" data-del-my-submission="' + String(r.id || '') + '">删除</button>';
+        return '<tr>'
+          + '<td data-label="时间">' + t + '</td>'
+          + '<td data-label="类型">' + typeTag + '</td>'
+          + '<td data-label="期号">' + escHtml(r.period_no || '') + '</td>'
+          + '<td data-label="提交用户">' + (submitUser || '—') + '</td>'
+          + '<td class="num" data-label="金额">' + amountCell + '</td>'
+          + '<td class="num" data-label="条目">' + itemsCell + '</td>'
+          + '<td class="my-sub-text" data-label="提交内容"><div class="my-sub-text-inner" style="white-space:pre-line;line-height:1.55;">' + textContent + '</div></td>'
+          + '<td class="num my-sub-actions" data-label="操作">' + delBtn + '</td>'
+          + '</tr>';
+      }).join('');
+      const pages = Math.max(1, Math.ceil(total / (data.pageSize || mySubmissionsPageSize)));
+      if (pages > 1) {
+        pager.classList.remove('hidden');
+        pagerInfo.textContent = '第 ' + data.page + ' / ' + pages + ' 页';
+        document.getElementById('mySubmissionsPrev').disabled = data.page <= 1;
+        document.getElementById('mySubmissionsNext').disabled = data.page >= pages;
+      } else {
+        pager.classList.add('hidden');
+      }
+    }
+
+    async function loadMySubmissions() {
+      try {
+        const data = await fetchMySubmissionsPage(mySubmissionsPage);
+        renderMySubmissionFilterOptions(data);
+        renderMySubmissions(data);
+      } catch (e) {
+        document.getElementById('mySubmissionsWrap').classList.remove('hidden');
+        document.getElementById('mySubmissionsStatus').textContent = '加载我的记录失败：' + e.message;
+        document.getElementById('mySubmissionsBody').innerHTML = '';
+        document.getElementById('mySubmissionsPager').classList.add('hidden');
+      }
+    }
+
+    document.getElementById('mySubmissionsTable').addEventListener('click', async (e) => {
+      const id = e.target && e.target.getAttribute ? e.target.getAttribute('data-del-my-submission') : null;
+      if (!id) return;
+      const ok = await showConfirmModal('确认删除', '确定删除这条提交记录吗？删除后不可恢复。', 'error');
+      if (!ok) return;
+      try {
+        await api('user_submission_delete', { id: Number(id) });
+        setStatus('删除成功', 'ok');
+        mySubmissionsPage = 1;
+        await loadMySubmissions();
+      } catch (err) {
+        const msg = err && err.message ? err.message : '删除失败';
+        setStatus(msg, 'error');
+        showAppModal('无法删除', msg, 'error');
+      }
+    });
+
+    /**
+     * @param {string} [suggestedDateFallback] user_status 的 8 位日期（仅当开奖表无下期推算时作备选）
+     */
+    async function loadLottery(suggestedDateFallback) {
+      const box = document.getElementById('lotteryBox');
+      const periodEl = document.getElementById('periodNo');
+      try {
+        const resp = await fetch(apiBase + '?action=lottery_context', { credentials: 'same-origin' });
+        const d = await resp.json();
+        if (!d.ok) return;
+        if (!d.lotteryConnected) {
+          box.classList.add('hidden');
+          box.innerHTML = '';
+          const fb = suggestedDateFallback && String(suggestedDateFallback).trim() !== '' ? String(suggestedDateFallback).trim() : getDefaultPeriodNo();
+          periodEl.value = fb;
+          return;
+        }
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        const sug = d.suggestedPeriodNo && String(d.suggestedPeriodNo).trim() !== '' ? String(d.suggestedPeriodNo).trim() : '';
+        if (sug) {
+          periodEl.value = sug;
+        } else if (suggestedDateFallback && String(suggestedDateFallback).trim() !== '') {
+          periodEl.value = String(suggestedDateFallback).trim();
+        } else {
+          periodEl.value = getDefaultPeriodNo();
+        }
+      } catch (e) {
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        const fb = suggestedDateFallback && String(suggestedDateFallback).trim() !== '' ? String(suggestedDateFallback).trim() : getDefaultPeriodNo();
+        periodEl.value = fb;
+      }
+    }
+
+    function getBeijingNowParts() {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Shanghai',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }).formatToParts(new Date());
+      const out = {};
+      parts.forEach((p) => {
+        if (p.type === 'year') out.year = parseInt(p.value, 10);
+        if (p.type === 'month') out.month = parseInt(p.value, 10);
+        if (p.type === 'day') out.day = parseInt(p.value, 10);
+        if (p.type === 'hour') out.hour = parseInt(p.value, 10);
+        if (p.type === 'minute') out.minute = parseInt(p.value, 10);
+      });
+      return out;
+    }
+
+    function getDefaultPeriodNo() {
+      const t = getBeijingNowParts();
+      let dt = new Date(Date.UTC(t.year, t.month - 1, t.day));
+      const nowMin = t.hour * 60 + t.minute;
+      if (nowMin >= datePeriodCutoffMinute) dt = new Date(dt.getTime() + 24 * 60 * 60 * 1000);
+      const y = dt.getUTCFullYear();
+      const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(dt.getUTCDate()).padStart(2, '0');
+      return '' + y + m + d;
+    }
+
+    async function checkStatus() {
+      try {
+        const resp = await fetch(apiBase + '?action=user_status', { credentials: 'same-origin' });
+        const data = await resp.json();
+        if (!data.ok) throw new Error(data.message || '状态接口失败');
+        if (data.datePeriodCutoffTime && /^\d{2}:\d{2}$/.test(data.datePeriodCutoffTime)) {
+          const hh = parseInt(data.datePeriodCutoffTime.slice(0, 2), 10);
+          const mm = parseInt(data.datePeriodCutoffTime.slice(3, 5), 10);
+          if (!isNaN(hh) && !isNaN(mm)) datePeriodCutoffMinute = hh * 60 + mm;
+        }
+        if (data.blocked) {
+          setStatus(data.message || '当前封盘中', 'error');
+        } else {
+          setStatus('当前可提交', 'ok');
+        }
+        if (data.logged_in) {
+          currentUserName = data.key_name || '';
+          featureDistributors = !!data.featureDistributors;
+          agentPasswordRequired = !!data.agentPasswordRequired;
+          applySessionFromCollectUser(data);
+          document.getElementById('distributorWrap').classList.toggle('hidden', !featureDistributors);
+          loginPanel.classList.add('hidden');
+          submitPanel.classList.remove('hidden');
+          restoreSubmitTab();
+          mySubmissionsPage = 1;
+          await loadLottery(data.suggestedDatePeriodNo || '');
+          if (featureDistributors) await loadDistributors();
+          await loadMySubmissions();
+        } else {
+          applySessionFromCollectUser({ loginAsAgent: false, distributorId: null, distributorName: '' });
+          document.getElementById('mySubmissionsWrap').classList.add('hidden');
+        }
+      } catch (e) {
+        setStatus(e.message, 'error');
+      }
+    }
+
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      if (!username) {
+        setStatus('请输入用户名', 'error');
+        return;
+      }
+      if (!password) {
+        setStatus('请输入密码', 'error');
+        return;
+      }
+      try {
+        const data = await api('user_login', { username, password });
+        currentUserName = data.key_name || '';
+        featureDistributors = !!data.featureDistributors;
+        agentPasswordRequired = !!data.agentPasswordRequired;
+        applySessionFromCollectUser(data);
+        document.getElementById('distributorWrap').classList.toggle('hidden', !featureDistributors);
+        loginPanel.classList.add('hidden');
+        submitPanel.classList.remove('hidden');
+        restoreSubmitTab();
+        setStatus(data.loginAsAgent ? '代理登录成功，可提交数据（归属已锁定为本人）' : '登录成功，可提交数据', 'ok');
+        mySubmissionsPage = 1;
+        await loadLottery('');
+        if (featureDistributors) await loadDistributors();
+        await loadMySubmissions();
+      } catch (e) {
+        setStatus(e.message, 'error');
+      }
+    });
+
+    document.getElementById('btnSubmit').addEventListener('click', async () => {
+      const periodNo = document.getElementById('periodNo').value.trim();
+      const ballScope = getActiveBallScope();
+      const rawTextEl = getActiveRawTextEl();
+      const rawText = rawTextEl.value.trim();
+      const scopeLabel = ballScope === 'pingma' ? '平码' : '特码';
+      if (!rawText) {
+        const tip = '请输入' + scopeLabel + '提交内容';
+        setStatus(tip, 'error');
+        showAppModal('提示', tip, 'error');
+        return;
+      }
+      try {
+        const distId = featureDistributors ? parseInt(document.getElementById('distributorSelect').value, 10) || 0 : 0;
+        const payload = {
+          periodNo,
+          rawText,
+          ballScope,
+          submitUserName: getSubmitUserNameByCurrentSelection(),
+        };
+        if (distId > 0) payload.distributorId = distId;
+        const data = await api('user_submit', payload);
+        let msg = '【' + scopeLabel + '】提交成功';
+        if (ballScope !== 'pingma') {
+          msg += '：金额 ' + data.totalAmount + '，号码条目 ' + data.totalItems;
+        }
+        if (data.submitUserName) {
+          msg += '；用户 ' + data.submitUserName;
+        }
+        if (data.periodNo) {
+          msg += '；已存期号 ' + data.periodNo;
+          if (data.periodResolveVia === 'byDrawDate' && data.periodInput && data.periodInput !== data.periodNo) {
+            msg += '（由 8 位 ' + data.periodInput + ' 按开奖日 nyr 匹配）';
+          } else if (data.periodResolveVia === 'yearPlusSeq' && data.periodInput && data.periodInput !== data.periodNo) {
+            msg += '（短码 ' + data.periodInput + ' 已按年补全）';
+          }
+          document.getElementById('periodNo').value = data.periodNo;
+        }
+        setStatus(msg, 'ok');
+        if (ballScope === 'pingma') {
+          rememberPingmaPreview(data);
+          const previewBody = renderPingmaPreview(data);
+          const modalBody = previewBody || msg;
+          showAppModal('提交成功', modalBody, 'ok', { wide: !!(previewBody && previewBody.length > 80) });
+        } else {
+          showAppModal('提交成功', msg, 'ok');
+        }
+        rawTextEl.value = '';
+        mySubmissionsPage = 1;
+        await loadMySubmissions();
+      } catch (e) {
+        const errMsg = e && e.message ? e.message : '提交失败';
+        setStatus(errMsg, 'error');
+        const errTitle = errMsg.indexOf('格式') === 0 || errMsg.indexOf('无法') === 0 ? '无法提交' : '提示';
+        showAppModal(errTitle, errMsg, 'error');
+      }
+    });
+
+    document.getElementById('btnPingmaPreview').addEventListener('click', async () => {
+      const rawText = (rawTextPingmaEl && rawTextPingmaEl.value || '').trim();
+      if (!rawText) {
+        if (lastPingmaPreviewData) {
+          const body = renderPingmaPreview(lastPingmaPreviewData);
+          if (body) {
+            setStatus('显示最近一次平码预览/提交结果', 'ok');
+            showAppModal('平码预览（最近提交）', body, 'ok', { wide: body.length > 80 });
+            return;
+          }
+        }
+        showAppModal('提示', '请输入平码内容，或先提交一次后再点预览查看最近结果', 'error');
+        return;
+      }
+      setStatus('正在解析平码预览…', '');
+      try {
+        const periodNo = document.getElementById('periodNo').value.trim();
+        const data = await api('user_pingma_preview', { rawText, periodNo });
+        rememberPingmaPreview(data);
+        const body = renderPingmaPreview(data);
+        if (!body) {
+          showAppModal('无法预览', '接口未返回解析结果，请刷新页面后重试', 'error');
+          return;
+        }
+        setStatus('平码预览已更新', 'ok');
+        showAppModal('平码预览', body, 'ok', { wide: body.length > 80 });
+      } catch (e) {
+        const errMsg = e && e.message ? e.message : '预览失败';
+        setStatus(errMsg, 'error');
+        showAppModal('无法预览', errMsg, 'error');
+      }
+    });
+
+    document.getElementById('btnDistributorRefresh').addEventListener('click', async () => {
+      try {
+        await loadDistributors();
+        setStatus('分销列表已刷新', 'ok');
+      } catch (e) {
+        setStatus(e.message, 'error');
+      }
+    });
+    document.getElementById('btnDistributorAdd').addEventListener('click', async () => {
+      const name = document.getElementById('newDistributorName').value.trim();
+      const pwd = document.getElementById('newDistributorPassword').value;
+      if (!name) {
+        showAppModal('提示', '请输入分销名称', 'error');
+        return;
+      }
+      if (agentPasswordRequired && (!pwd || pwd.length < 4)) {
+        showAppModal('提示', '请填写代理登录密码（至少4位）', 'error');
+        return;
+      }
+      try {
+        const body = { name };
+        if (pwd && pwd.length >= 4) body.password = pwd;
+        const data = await api('user_distributor_save', body);
+        document.getElementById('newDistributorName').value = '';
+        document.getElementById('newDistributorPassword').value = '';
+        await loadDistributors();
+        const okMsg = (data && data.message) ? String(data.message) : '分销已添加，可在上方下拉里选择本次提交归属。';
+        setStatus(okMsg, 'ok');
+        showAppModal('添加成功', okMsg, 'ok');
+      } catch (e) {
+        showAppModal('添加失败', e.message || '失败', 'error');
+      }
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      try {
+        await api('user_logout', {});
+      } catch (e) {}
+      submitPanel.classList.add('hidden');
+      loginPanel.classList.remove('hidden');
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      currentUserName = '';
+      featureDistributors = false;
+      myFilterSubmitUser = '';
+      myFilterDateStart = '';
+      myFilterDateEnd = '';
+      myFilterPeriodNo = '';
+      loginAsAgent = false;
+      sessionDistributorId = 0;
+      distributorDisplayName = '';
+      applySubmitPanelRole();
+      document.getElementById('distributorWrap').classList.add('hidden');
+      document.getElementById('distributorManageWrap').classList.add('hidden');
+      document.getElementById('mySubmissionsWrap').classList.add('hidden');
+      setStatus('已退出登录', 'ok');
+    });
+
+    document.getElementById('mySubmissionsPrev').addEventListener('click', async () => {
+      if (mySubmissionsPage <= 1) return;
+      mySubmissionsPage -= 1;
+      await loadMySubmissions();
+    });
+    document.getElementById('mySubmissionsNext').addEventListener('click', async () => {
+      mySubmissionsPage += 1;
+      try {
+        await loadMySubmissions();
+      } catch (e) {
+        mySubmissionsPage -= 1;
+      }
+    });
+
+    document.getElementById('myFilterApply').addEventListener('click', async () => {
+      myFilterSubmitUser = (document.getElementById('myFilterUser').value || '').trim();
+      myFilterDateStart = (document.getElementById('myFilterDateStart').value || '').trim();
+      myFilterDateEnd = (document.getElementById('myFilterDateEnd').value || '').trim();
+      myFilterPeriodNo = (document.getElementById('myFilterPeriodNo').value || '').trim();
+      mySubmissionsPage = 1;
+      await loadMySubmissions();
+    });
+    document.getElementById('myFilterReset').addEventListener('click', async () => {
+      myFilterSubmitUser = '';
+      myFilterDateStart = '';
+      myFilterDateEnd = '';
+      myFilterPeriodNo = '';
+      document.getElementById('myFilterUser').value = '';
+      document.getElementById('myFilterDateStart').value = '';
+      document.getElementById('myFilterDateEnd').value = '';
+      document.getElementById('myFilterPeriodNo').value = '';
+      mySubmissionsPage = 1;
+      await loadMySubmissions();
+    });
+
+    checkStatus();
+  </script>
+</body>
+</html>
+

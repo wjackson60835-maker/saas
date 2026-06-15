@@ -1,0 +1,15 @@
+<?php
+/**
+ * 复制为 database.php 后填写服务器数据库信息：
+ *   cp config/database.php.example config/database.php
+ */
+return array(
+    'database' => array(
+        'type' => 'mysqli',
+        'host' => '127.0.0.1',
+        'user' => 'root',
+        'passwd' => 'your_password',
+        'port' => '3306',
+        'dbname' => 'your_database',
+    ),
+);

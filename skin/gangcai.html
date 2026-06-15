@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>港彩开奖</title>
+  <style>
+    * { margin: 0; padding: 0; }
+    body { background: #fff; color: #333; font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif; }
+    .new-KJ-TabBox-box { font-size: 16px; min-height: 130px; height: auto; box-sizing: border-box; color: #333; padding: 8px; }
+    .new-KJ-TabBox-box a { text-decoration: none; }
+    .new-KJ-TabBox-box .kj-font-red { color: #f00 !important; }
+    .new-KJ-TabBox-box-tit { display: flex; align-items: center; height: 17px; line-height: 17px; font-size: 17px; }
+    .new-KJ-TabBox-box-tit-r { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 4px 6px; }
+    .kj-tit-countdown { font-size: 15px; white-space: nowrap; color: #555; line-height: 17px; }
+    .new-KJ-TabBox-box-tit-m { flex: 1; text-align: center; font-weight: 700; }
+    .new-KJ-TabBox-box-con { display: flex; margin: 8px 0; align-items: center; }
+    .new-KJ-TabBox-box-con .kj-ball { flex: 1; display: flex; align-items: center; justify-content: center; height: 61px; text-align: center; border-radius: 4px; margin-right: 6px; box-sizing: border-box; flex-direction: column; }
+    .new-KJ-TabBox-box-con .kj-ball:last-child { margin-right: 0; }
+    .new-KJ-TabBox-box-con .kj-ball:nth-last-child(3) { margin-right: 6px; }
+    .new-KJ-TabBox-box-con .kj-ball h2 { margin: 0; padding: 0; color: #fff; line-height: 24px; font-size: 28px; font-weight: 900; font-family: Tahoma, Geneva, sans-serif; }
+    .new-KJ-TabBox-box-con .kj-ball .whsx { display: inline-block; height: 19px; line-height: 19px; margin-top: 6px; padding: 0 6px; border-radius: 2px; color: #333; font-size: 14px; background: #fff; }
+    .new-KJ-TabBox-box-con .kj-add { display: flex; align-items: center; margin-right: 8px; font-size: 32px; font-weight: 700; }
+    .new-KJ-TabBox-box-foot { display: flex; align-items: center; font-size: 16px; }
+    .new-KJ-TabBox-box-foot-l { flex: 1; }
+    .new-KJ-TabBox-box-foot-r-sx { display: inline-block; width: 40px; height: 20px; line-height: 20px; text-align: center; color: #fff; border-radius: 4px; background: #ff9900; cursor: pointer; border: 0; }
+    .ballred { background: rgb(255, 0, 0); color: #fff; }
+    .ballblue { background: rgb(0, 0, 255); color: #fff; }
+    .ballgreen { background: rgb(0, 153, 0); color: #fff; }
+    .ballgray { background: #999; color: #fff; }
+    @media screen and (max-width: 650px) {
+      .new-KJ-TabBox-box { font-size: 14px; }
+      .new-KJ-TabBox-box-tit { font-size: 16px; }
+      .kj-tit-countdown { font-size: 13px; }
+      .new-KJ-TabBox-box-con .kj-ball { margin-right: 4px; }
+      .new-KJ-TabBox-box-con .kj-ball:nth-last-child(3) { margin-right: 4px; }
+      .new-KJ-TabBox-box-con .kj-ball h2 { font-size: 24px; }
+      .new-KJ-TabBox-box-con .kj-ball .whsx { margin-top: 4px; padding: 0 2px; font-size: 12px; }
+      .new-KJ-TabBox-box-con .kj-add { margin-right: 4px; font-size: 24px; }
+      .new-KJ-TabBox-box-foot { font-size: 15px; }
+    }
+    @media screen and (max-width: 450px) {
+      .new-KJ-TabBox-box-tit-m .kj-lotto-tit2 span:first-child { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="new-KJ-TabBox-box">
+    <div class="new-KJ-TabBox-box-tit">
+      <div class="new-KJ-TabBox-box-tit-l">港彩六合 <font class="kj-font-red"><span id="periodNo">--</span></font></div>
+      <div class="new-KJ-TabBox-box-tit-m"><div class="kj-lotto-tit2"><span>8886fcua.com</span></div></div>
+      <div class="new-KJ-TabBox-box-tit-r"><span class="kj-tit-countdown" id="kjTitCountdown" aria-live="polite">(倒计时--:--:--)</span><a target="_blank" href="/xghistory/" class="kj-font-red">历史记录</a></div>
+    </div>
+
+    <div class="new-KJ-TabBox-box-con" id="ballsWrap">
+      <div id="w1" class="kj-ball ballgray"><h2 id="haoma1">--</h2><div id="shengxiao1" class="whsx">--</div></div>
+      <div id="w2" class="kj-ball ballgray"><h2 id="haoma2">--</h2><div id="shengxiao2" class="whsx">--</div></div>
+      <div id="w3" class="kj-ball ballgray"><h2 id="haoma3">--</h2><div id="shengxiao3" class="whsx">--</div></div>
+      <div id="w4" class="kj-ball ballgray"><h2 id="haoma4">--</h2><div id="shengxiao4" class="whsx">--</div></div>
+      <div id="w5" class="kj-ball ballgray"><h2 id="haoma5">--</h2><div id="shengxiao5" class="whsx">--</div></div>
+      <div id="w6" class="kj-ball ballgray"><h2 id="haoma6">--</h2><div id="shengxiao6" class="whsx">--</div></div>
+      <div class="kj-add">+</div>
+      <div id="w7" class="kj-ball ballgray"><h2 id="haoma7">--</h2><div id="shengxiao7" class="whsx">--</div></div>
+    </div>
+
+    <div class="new-KJ-TabBox-box-foot">
+      <div class="new-KJ-TabBox-box-foot-l">下一期：<span id="nextIssue">--</span> <span id="nextTime">--</span></div>
+      <div class="new-KJ-TabBox-box-foot-r"><button type="button" class="new-KJ-TabBox-box-foot-r-sx" id="btnRefresh" onclick="refreshGangcai()">刷新</button></div>
+    </div>
+  </div>
+
+  <script>
+    const API = "/ajax/gangcai_proxy.php";
+
+    const RED = new Set([1, 2, 7, 8, 12, 13, 18, 19, 23, 24, 29, 30, 34, 35, 40, 45, 46]);
+    const BLUE = new Set([3, 4, 9, 10, 14, 15, 20, 25, 26, 31, 36, 37, 41, 42, 47, 48]);
+    const GREEN = new Set([5, 6, 11, 16, 17, 21, 22, 27, 28, 32, 33, 38, 39, 43, 44, 49]);
+    const ZODIAC_ORDER = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
+    /** 2026 年 01–49 与后台 lhc_lookup.php 一致 */
+    const ZODIAC_BY_BALL_2026 = (() => {
+      const m = {};
+      const add = (sx, csv) => {
+        csv.split(",").forEach((x) => {
+          m[String(parseInt(x.trim(), 10)).padStart(2, "0")] = sx;
+        });
+      };
+      add("马", "01,13,25,37,49");
+      add("羊", "12,24,36,48");
+      add("猴", "11,23,35,47");
+      add("鸡", "10,22,34,46");
+      add("狗", "09,21,33,45");
+      add("猪", "08,20,32,44");
+      add("鼠", "07,19,31,43");
+      add("牛", "06,18,30,42");
+      add("虎", "05,17,29,41");
+      add("兔", "04,16,28,40");
+      add("龙", "03,15,27,39");
+      add("蛇", "02,14,26,38");
+      return m;
+    })();
+    const WUXING_MAP = {
+      "金": new Set(["04", "05", "12", "13", "26", "27", "34", "35", "42", "43"]),
+      "木": new Set(["08", "09", "16", "17", "24", "25", "38", "39", "46", "47"]),
+      "水": new Set(["01", "14", "15", "22", "23", "30", "31", "44", "45"]),
+      "火": new Set(["02", "03", "10", "11", "18", "19", "32", "33", "40", "41", "48", "49"]),
+      "土": new Set(["06", "07", "20", "21", "28", "29", "36", "37"])
+    };
+    const REVEAL_STEP_MS = 10000;
+    const REVEAL_TOTAL_STEPS = 7;
+    const REVEAL_STORAGE_KEY = "gc_reveal_state_v1";
+
+    function pad2(v) {
+      const n = parseInt(v, 10);
+      return Number.isNaN(n) ? "--" : String(n).padStart(2, "0");
+    }
+
+    function toNum(v) {
+      const n = parseInt(String(v).replace(/[^\d]/g, ""), 10);
+      return Number.isNaN(n) ? null : n;
+    }
+
+    function ballClass(n) {
+      if (RED.has(n)) return "ballred";
+      if (BLUE.has(n)) return "ballblue";
+      if (GREEN.has(n)) return "ballgreen";
+      return "ballgray";
+    }
+
+    function getZodiacByNumber(n, year) {
+      if (!Number.isInteger(n) || n < 1 || n > 49) return "--";
+      const y = Number.isInteger(year) ? year : new Date().getFullYear();
+      const key = String(n).padStart(2, "0");
+      if (y >= 2026) {
+        return ZODIAC_BY_BALL_2026[key] || "--";
+      }
+      const startIndex = ((4 + (y - 2024)) % 12 + 12) % 12;
+      const bucket = (n - 1) % 12;
+      return ZODIAC_ORDER[(startIndex - bucket + 12) % 12];
+    }
+
+    function getWuxingByNumber(n) {
+      if (!Number.isInteger(n) || n < 1 || n > 49) return "--";
+      const n2 = String(n).padStart(2, "0");
+      for (const el of Object.keys(WUXING_MAP)) {
+        if (WUXING_MAP[el].has(n2)) return el;
+      }
+      return "--";
+    }
+
+    function flattenObjects(root, out = []) {
+      if (!root) return out;
+      if (Array.isArray(root)) {
+        for (const item of root) flattenObjects(item, out);
+        return out;
+      }
+      if (typeof root === "object") {
+        out.push(root);
+        for (const k of Object.keys(root)) flattenObjects(root[k], out);
+      }
+      return out;
+    }
+
+    function tryGetNumbers(obj) {
+      const keys = ["data", "code", "codes", "numbers", "numList", "balls", "openCode", "result"];
+      for (const k of keys) {
+        if (!(k in obj)) continue;
+        const v = obj[k];
+        if (Array.isArray(v)) {
+          const arr = v.map(toNum).filter(Boolean);
+          if (arr.length >= 7) return arr.slice(0, 7);
+        }
+        if (typeof v === "string") {
+          const arr = v.split(/[,\s|+]+/).map(toNum).filter(Boolean);
+          if (arr.length >= 7) return arr.slice(0, 7);
+        }
+      }
+      const bKeys = ["b1", "b2", "b3", "b4", "b5", "b6", "b7"];
+      const bArr = bKeys.map((k) => toNum(obj[k])).filter(Boolean);
+      if (bArr.length >= 7) return bArr.slice(0, 7);
+
+      const ballArr = [];
+      for (let i = 1; i <= 7; i++) {
+        const ballObj = obj["ball" + i];
+        if (ballObj && typeof ballObj === "object") {
+          const n = toNum(ballObj.ballNo || ballObj.number || ballObj.num);
+          if (n) ballArr.push(n);
+        }
+      }
+      if (ballArr.length >= 7) return ballArr.slice(0, 7);
+      return null;
+    }
+
+    function pickOne(obj, names) {
+      for (const k of names) {
+        if (obj[k] !== undefined && obj[k] !== null && obj[k] !== "") return String(obj[k]);
+      }
+      return "";
+    }
+
+    function parseHmsToSeconds(text) {
+      if (!text || typeof text !== "string") return null;
+      const m = text.trim().match(/^(\d{1,2}):(\d{1,2}):(\d{1,2})$/);
+      if (!m) return null;
+      const h = parseInt(m[1], 10);
+      const mi = parseInt(m[2], 10);
+      const s = parseInt(m[3], 10);
+      if ([h, mi, s].some((n) => Number.isNaN(n))) return null;
+      return h * 3600 + mi * 60 + s;
+    }
+
+    function formatHms(totalSec) {
+      if (totalSec == null || Number.isNaN(totalSec) || totalSec < 0) return "--:--:--";
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+    }
+
+    function getBjNowParts() {
+      const s = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Shanghai" });
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/);
+      if (!m) return null;
+      return {
+        year: parseInt(m[1], 10),
+        month: parseInt(m[2], 10),
+        day: parseInt(m[3], 10),
+        hour: parseInt(m[4], 10),
+        minute: parseInt(m[5], 10),
+        second: parseInt(m[6], 10)
+      };
+    }
+
+    function bjPartsToTs(parts) {
+      if (!parts) return null;
+      return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour - 8, parts.minute, parts.second || 0);
+    }
+
+    /** 底部「下一期」时间展示用：去掉 星期x / 周x / 礼拜x，倒计时计算仍用原始字符串 */
+    function stripWeekdayForDisplay(s) {
+      if (!s || typeof s !== "string") return s;
+      return s
+        .replace(/\(?\s*星期[一二三四五六日天]\s*\)?/g, "")
+        .replace(/\(?\s*周[一二三四五六日天]\s*\)?/g, "")
+        .replace(/\(?\s*礼拜[一二三四五六日天]\s*\)?/g, "")
+        .replace(/\s{2,}/g, " ")
+        .replace(/^\s+|\s+$/g, "");
+    }
+
+    /**
+     * 将「M月d日…H点i分」按北京时间解析为时间戳；若已不晚于当前时间则按日历逐日顺延（当天已过 21:30 则视为次日同一时刻）。
+     * @returns {{ targetTs: number, rolled: boolean } | null}
+     */
+    function resolveNextTimeTextToFutureTs(nextTimeText) {
+      if (!nextTimeText || typeof nextTimeText !== "string") return null;
+      const mm = nextTimeText.match(/(\d{1,2})月(\d{1,2})日.*?(\d{1,2})点(\d{1,2})分/);
+      if (!mm) return null;
+      const now = getBjNowParts();
+      if (!now) return null;
+      const month = parseInt(mm[1], 10);
+      const day = parseInt(mm[2], 10);
+      const hour = parseInt(mm[3], 10);
+      const minute = parseInt(mm[4], 10);
+      if ([month, day, hour, minute].some((n) => Number.isNaN(n))) return null;
+
+      let year = now.year;
+      if (now.month === 12 && month === 1) year += 1;
+
+      const nowTs = bjPartsToTs(now);
+      if (nowTs == null) return null;
+
+      let targetTs = bjPartsToTs({ year: year, month: month, day: day, hour: hour, minute: minute, second: 0 });
+      if (targetTs == null) return null;
+
+      if (targetTs < nowTs - 275 * 24 * 3600 * 1000) {
+        targetTs = bjPartsToTs({ year: year + 1, month: month, day: day, hour: hour, minute: minute, second: 0 });
+        if (targetTs == null) return null;
+      }
+
+      let rolled = false;
+      let guard = 0;
+      while (targetTs <= nowTs && guard < 400) {
+        targetTs += 24 * 3600 * 1000;
+        rolled = true;
+        guard++;
+      }
+      return { targetTs: targetTs, rolled: rolled };
+    }
+
+    function formatNextTimeDisplayFromTs(targetTs) {
+      const s = new Date(targetTs).toLocaleString("sv-SE", { timeZone: "Asia/Shanghai" });
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/);
+      if (!m) return null;
+      const mo = parseInt(m[2], 10);
+      const d = parseInt(m[3], 10);
+      const h = parseInt(m[4], 10);
+      const minute = parseInt(m[5], 10);
+      const pad = (n) => String(n).padStart(2, "0");
+      const parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Shanghai", weekday: "short" }).formatToParts(new Date(targetTs));
+      let wk = "Sun";
+      for (const p of parts) {
+        if (p.type === "weekday") wk = p.value;
+      }
+      const wmap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+      const wd = ["日", "一", "二", "三", "四", "五", "六"];
+      const wi = wmap[wk] !== undefined ? wmap[wk] : 0;
+      return pad(mo) + "月" + pad(d) + "日 星期" + wd[wi] + " " + h + "点" + minute + "分";
+    }
+
+    function calcSecFromNextTimeText(nextTimeText) {
+      const r = resolveNextTimeTextToFutureTs(nextTimeText);
+      if (!r) return null;
+      const now = getBjNowParts();
+      if (!now) return null;
+      const nowTs = bjPartsToTs(now);
+      if (nowTs == null) return null;
+      const sec = Math.floor((r.targetTs - nowTs) / 1000);
+      return sec < 0 ? 0 : sec;
+    }
+
+    function extractDraw(payload) {
+      const objs = flattenObjects(payload);
+      for (const obj of objs) {
+        const nums = tryGetNumbers(obj);
+        if (!nums) continue;
+        const yearNo = parseInt(pickOne(obj, ["yearNo", "year", "yyyy"]), 10);
+        const secRaw = pickOne(obj, ["seconds_to_next_draw", "secondsToNextDraw", "nextLeftSeconds", "leftSeconds"]);
+        let secLeft = null;
+        if (secRaw) {
+          const n = parseInt(secRaw, 10);
+          secLeft = Number.isNaN(n) ? null : n;
+        }
+        if (secLeft === null) secLeft = parseHmsToSeconds(pickOne(obj, ["daojishi", "countdown", "countDown"]));
+        if (secLeft === null) secLeft = calcSecFromNextTimeText(pickOne(obj, ["nextTime", "nextDrawTime", "nextLotteryTime"]));
+        return {
+          numbers: nums,
+          issue: pickOne(obj, ["period", "periods", "qishu", "issue", "expect", "issueNo", "number"]),
+          date: pickOne(obj, ["date", "ballTime", "openTime", "drawTime", "time", "lotteryTime"]),
+          nextIssue: pickOne(obj, ["nextIssue", "nextPeriods", "nextPeriod", "nextExpect", "nextLotteryNumber", "nextNo"]),
+          nextTime: pickOne(obj, ["nextTime", "nextDrawTime", "nextLotteryTime"]),
+          yearNo: Number.isNaN(yearNo) ? null : yearNo,
+          secLeft: secLeft
+        };
+      }
+      return null;
+    }
+
+    let countdownTimer = null;
+    let secLeftState = null;
+    let revealTimer = null;
+    let animatingIssue = "";
+
+    function renderCountdown() {
+      const t = formatHms(secLeftState);
+      const tit = document.getElementById("kjTitCountdown");
+      if (tit) tit.textContent = "(倒计时" + t + ")";
+    }
+
+    function syncCountdown(secLeft) {
+      secLeftState = (secLeft == null || Number.isNaN(secLeft)) ? null : Math.max(0, secLeft);
+      renderCountdown();
+      if (!countdownTimer) {
+        countdownTimer = setInterval(function () {
+          if (secLeftState == null) return;
+          if (secLeftState > 0) secLeftState -= 1;
+          renderCountdown();
+        }, 1000);
+      }
+    }
+
+    function isPredrawWindow(secLeft) {
+      return secLeft != null && !Number.isNaN(secLeft) && secLeft > 0 && secLeft <= 180;
+    }
+
+    function stopReveal(clearIssue = false) {
+      if (revealTimer) {
+        clearInterval(revealTimer);
+        revealTimer = null;
+      }
+      if (clearIssue) animatingIssue = "";
+    }
+
+    function readRevealStateMap() {
+      try {
+        const raw = localStorage.getItem(REVEAL_STORAGE_KEY);
+        const map = raw ? JSON.parse(raw) : {};
+        return map && typeof map === "object" ? map : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function writeRevealStateMap(map) {
+      try { localStorage.setItem(REVEAL_STORAGE_KEY, JSON.stringify(map || {})); } catch (e) {}
+    }
+
+    function getIssueRevealState(issueKey) {
+      return readRevealStateMap()[issueKey] || null;
+    }
+
+    function setIssueRevealState(issueKey, state) {
+      if (!issueKey) return;
+      const map = readRevealStateMap();
+      map[issueKey] = state;
+      writeRevealStateMap(map);
+    }
+
+    function parseDrawDateToTs(dateText) {
+      if (!dateText || typeof dateText !== "string") return null;
+      const m = dateText.match(/^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/);
+      if (!m) return null;
+      const year = parseInt(m[1], 10);
+      const month = parseInt(m[2], 10);
+      const day = parseInt(m[3], 10);
+      const hour = parseInt(m[4], 10);
+      const minute = parseInt(m[5], 10);
+      const second = parseInt(m[6] || "0", 10);
+      if ([year, month, day, hour, minute, second].some((n) => Number.isNaN(n))) return null;
+      return Date.UTC(year, month - 1, day, hour - 8, minute, second);
+    }
+
+    function ensureIssueRevealState(issueKey, drawDateText) {
+      if (!issueKey) return null;
+      let st = getIssueRevealState(issueKey);
+      if (st && st.startedAt) return st;
+      const drawTs = parseDrawDateToTs(drawDateText);
+      const now = Date.now();
+      const startedAt = drawTs != null ? drawTs : now;
+      const done = drawTs != null ? (now - drawTs >= REVEAL_STEP_MS * REVEAL_TOTAL_STEPS) : false;
+      st = { startedAt: startedAt, done: done };
+      setIssueRevealState(issueKey, st);
+      return st;
+    }
+
+    function renderGrayBalls() {
+      for (let i = 0; i < 7; i++) {
+        const box = document.getElementById("w" + (i + 1));
+        const no = document.getElementById("haoma" + (i + 1));
+        const sx = document.getElementById("shengxiao" + (i + 1));
+        box.className = "kj-ball ballgray";
+        no.textContent = "--";
+        sx.textContent = "--";
+      }
+    }
+
+    function renderOneBall(nums, yearNo, idx) {
+      const n = nums[idx] || null;
+      const nNum = toNum(n);
+      const box = document.getElementById("w" + (idx + 1));
+      const no = document.getElementById("haoma" + (idx + 1));
+      const sx = document.getElementById("shengxiao" + (idx + 1));
+      box.className = "kj-ball " + (nNum ? ballClass(nNum) : "ballgray");
+      no.textContent = nNum ? pad2(nNum) : "--";
+      sx.textContent = nNum ? (getZodiacByNumber(nNum, yearNo) + "/" + getWuxingByNumber(nNum)) : "--";
+    }
+
+    function renderBalls(nums, yearNo) {
+      for (let i = 0; i < 7; i++) renderOneBall(nums, yearNo, i);
+    }
+
+    function renderBallsUpTo(nums, yearNo, count) {
+      renderGrayBalls();
+      for (let i = 0; i < count && i < REVEAL_TOTAL_STEPS; i++) {
+        renderOneBall(nums, yearNo, i);
+      }
+    }
+
+    function runReveal(draw, issueKey) {
+      const st = ensureIssueRevealState(issueKey, draw.date);
+      if (!st) {
+        renderBalls(draw.numbers, draw.yearNo);
+        return;
+      }
+      stopReveal(false);
+      animatingIssue = issueKey;
+      const tick = function () {
+        const elapsed = Date.now() - st.startedAt;
+        let count = Math.floor(elapsed / REVEAL_STEP_MS) + 1;
+        if (count < 0) count = 0;
+        if (count > REVEAL_TOTAL_STEPS) count = REVEAL_TOTAL_STEPS;
+        renderBallsUpTo(draw.numbers, draw.yearNo, count);
+        if (count >= REVEAL_TOTAL_STEPS) {
+          st.done = true;
+          setIssueRevealState(issueKey, st);
+          stopReveal(true);
+        }
+      };
+      tick();
+      if (animatingIssue === issueKey) {
+        revealTimer = setInterval(tick, 1000);
+      }
+    }
+
+    async function apiGet(action, params = {}) {
+      const u = new URL(API, window.location.origin);
+      u.searchParams.set("action", action);
+      Object.keys(params).forEach((k) => {
+        if (params[k] !== undefined && params[k] !== null && params[k] !== "") {
+          u.searchParams.set(k, params[k]);
+        }
+      });
+      const res = await fetch(u.toString(), { method: "GET", cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const payload = await res.json();
+      if (!payload || payload.ok !== true) {
+        throw new Error((payload && payload.message) ? payload.message : "proxy failed");
+      }
+      return payload.data;
+    }
+
+    async function loadCurrent() {
+      try {
+        const data = await apiGet("current");
+        const draw = extractDraw(data);
+        if (!draw) throw new Error("未识别到开奖号码字段");
+        const issueText = draw.issue || "--";
+        const fullIssue = draw.yearNo && issueText.length <= 3 ? String(draw.yearNo) + issueText : issueText;
+        document.getElementById("periodNo").textContent = fullIssue;
+        document.getElementById("nextIssue").textContent = draw.nextIssue || "--";
+        let nextTimeRaw = draw.nextTime || "";
+        const resolvedNext = resolveNextTimeTextToFutureTs(nextTimeRaw);
+        if (resolvedNext && resolvedNext.rolled) {
+          const fmt = formatNextTimeDisplayFromTs(resolvedNext.targetTs);
+          if (fmt) {
+            nextTimeRaw = fmt;
+            draw.nextTime = fmt;
+          }
+          const now = getBjNowParts();
+          const nowTs = now ? bjPartsToTs(now) : null;
+          if (nowTs != null) {
+            draw.secLeft = Math.max(0, Math.floor((resolvedNext.targetTs - nowTs) / 1000));
+          }
+        }
+        const nextTimeShow = stripWeekdayForDisplay(nextTimeRaw);
+        document.getElementById("nextTime").textContent = nextTimeShow.length ? nextTimeShow : "--";
+        syncCountdown(draw.secLeft);
+        if (isPredrawWindow(draw.secLeft)) {
+          stopReveal(true);
+          renderGrayBalls();
+        } else if (fullIssue) {
+          const st = getIssueRevealState(fullIssue);
+          if (st && st.done === true) {
+            stopReveal(true);
+            renderBalls(draw.numbers, draw.yearNo);
+          } else if (revealTimer && animatingIssue === fullIssue) {
+            // keep running
+          } else {
+            runReveal(draw, fullIssue);
+          }
+        } else {
+          stopReveal(true);
+          renderBalls(draw.numbers, draw.yearNo);
+        }
+      } catch (e) {
+        document.getElementById("nextIssue").textContent = "--";
+        document.getElementById("nextTime").textContent = "获取失败";
+        syncCountdown(null);
+        stopReveal(true);
+      }
+    }
+
+    function refreshGangcai() {
+      loadCurrent();
+      setTimeout(function () {
+        window.location.reload();
+      }, 300);
+    }
+
+    document.getElementById("btnRefresh").addEventListener("click", refreshGangcai);
+
+    loadCurrent();
+    setInterval(loadCurrent, 20000);
+  </script>
+</body>
+</html>

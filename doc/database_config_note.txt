@@ -1,0 +1,31 @@
+PbootCMS 数据库配置说明（为什么改了 config/database.php 仍连旧库）
+
+一、写法必须带「database」这层键
+  config/database.php 必须返回：
+  <?php
+  return array(
+      'database' => array(
+          'type'   => 'mysqli',
+          'host'   => '127.0.0.1',
+          'user'   => '你的账号',
+          'passwd' => '你的密码',
+          'port'   => '3306',
+          'dbname' => '你的库名',
+      ),
+  );
+  若把 dbname/host 写在数组最外层（没有包在 database 里），程序会照样用惯性配置里的默认 pb 等库名，
+  ajax/collect/api.php 里读到的 $db['database'] 也可能是空的。
+
+二、改动的必须是「站点正在运行」的那份文件
+  磁盘上有多个拷贝（本地 saas/ssas、FTP 多套目录）时，只有与 index.php / admin.php
+  同站点根的那份 config/database.php 会生效。你改的若是另一文件夹，当然不会变。
+
+三、 inertia 会与你的配置「合并」
+  core/convention.php 里已有 database 默认值；你的 database.php 会 mult_array_merge 叠加上去，
+  只覆盖你写出来的键。
+
+四、运行缓存
+  php-fpm OPcache 可能缓存旧文件，改完后重启 php-fpm 或清 opcode 缓存再试。
+
+五、自检
+  根目录附带 check_database_config_merge.php（设好 k 访问一次可看合并后的 dbname），看完删除。

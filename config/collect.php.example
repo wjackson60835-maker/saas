@@ -1,0 +1,12 @@
+<?php
+/**
+ * 复制为 collect.php 后修改密码：
+ *   cp config/collect.php.example config/collect.php
+ */
+return array(
+    'admin_password' => 'change_me_strong_password',
+    'timezone' => 'Asia/Shanghai',
+    'default_period_no' => '',
+    'duplicate_ball_merge' => 'sum',
+    'cron_purge_secret' => '',
+);

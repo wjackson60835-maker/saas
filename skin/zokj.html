@@ -1,0 +1,810 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #fff;
+        }
+
+        .new-KJ-TabBox-box {
+            font-size: 16px;
+            min-height: 130px;
+            height: auto;
+            box-sizing: border-box;
+            color: #333;
+            padding: 8px;
+            font-family: 'PingFang SC', 'microsoft yahei', arial, 'helvetica neue', 'hiragino sans gb', sans-serif;
+        }
+
+        .new-KJ-TabBox-box a {
+            text-decoration: none;
+        }
+
+        .new-KJ-TabBox-box .kj-font-red {
+            color: #f00 !important;
+        }
+
+        .new-KJ-TabBox-box-tit {
+            display: flex;
+            align-items: center;
+            height: 17px;
+            line-height: 17px;
+            font-size: 17px;
+        }
+
+        .new-KJ-TabBox-box-tit-l {}
+
+        .new-KJ-TabBox-box-tit-m {
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .new-KJ-TabBox-box-tit-r {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 4px 6px;
+        }
+
+        .kj-tit-countdown {
+            font-size: 15px;
+            white-space: nowrap;
+            color: #555;
+            line-height: 17px;
+        }
+
+        @media screen and (max-width: 650px) {
+            .kj-tit-countdown {
+                font-size: 13px;
+            }
+        }
+
+        .new-KJ-TabBox-box-con {
+            display: flex;
+            margin: 8px 0;
+        }
+
+        .new-KJ-TabBox-box-con .kj-ball {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 61px;
+            text-align: center;
+            border-radius: 4px;
+            margin-right: 6px;
+            box-sizing: border-box;
+            flex-direction: column;
+        }
+
+        .new-KJ-TabBox-box-con .kj-ball:last-child {
+            margin-right: 0;
+        }
+
+        .new-KJ-TabBox-box-con .kj-ball:nth-last-child(3) {
+            margin-right: 6px;
+        }
+
+        .new-KJ-TabBox-box-con .kj-ball h2 {
+            margin: 0;
+            padding: 0;
+            color: #fff;
+            line-height: 24px;
+            font-size: 28px;
+            font-weight: 900;
+            font-family: Tahoma, Geneva, sans-serif;
+        }
+
+        .new-KJ-TabBox-box-con .kj-ball .whsx {
+            display: inline-block;
+            height: 19px;
+            line-height: 19px;
+            margin-top: 6px;
+            padding: 0 6px;
+            border-radius: 2px;
+            color: #333;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        .new-KJ-TabBox-box-con .kj-add {
+            display: flex;
+            align-items: center;
+            margin-right: 8px;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .new-KJ-TabBox-box-con.kj-render-pending {
+            visibility: hidden;
+        }
+
+        .kj-prehide .new-KJ-TabBox-box-con {
+            visibility: hidden !important;
+        }
+
+        .new-KJ-TabBox-box-foot {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .new-KJ-TabBox-box-foot-l {
+            flex: 1;
+        }
+
+        .new-KJ-TabBox-box-foot-r {}
+
+        .new-KJ-TabBox-box-foot-r-sx {
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            color: #fff;
+            border-radius: 4px;
+            background: #FF9900;
+        }
+
+        @media screen and (max-width: 650px) {
+            .new-KJ-TabBox-box {
+                font-size: 14px;
+            }
+
+            .new-KJ-TabBox-box-tit {
+                font-size: 16px;
+            }
+
+            .new-KJ-TabBox-box-con .kj-ball {
+                margin-right: 4px;
+            }
+
+            .new-KJ-TabBox-box-con .kj-ball:nth-last-child(3) {
+                margin-right: 4px;
+            }
+
+            .new-KJ-TabBox-box-con .kj-ball h2 {
+                font-size: 24px;
+            }
+
+            .new-KJ-TabBox-box-con .kj-ball .whsx {
+                margin-top: 4px;
+                padding: 0 2px;
+                font-size: 12px;
+            }
+
+            .new-KJ-TabBox-box-con .kj-add {
+                margin-right: 4px;
+            }
+
+            .new-KJ-TabBox-box-con .kj-add {
+                font-size: 24px;
+            }
+
+            .new-KJ-TabBox-box-foot {
+                font-size: 15px;
+            }
+        }
+
+        @media screen and (max-width:450px) {
+            .new-KJ-TabBox-box-tit-m .kj-lotto-tit2 span:first-child {
+                display: none;
+            }
+        }
+    </style>
+    <script>
+        (function () {
+            try {
+                var fg = sessionStorage.getItem('kj_force_gray_until_ms');
+                if (fg) {
+                    var fgMs = parseInt(fg, 10);
+                    if (!isNaN(fgMs) && fgMs > Date.now()) {
+                        document.documentElement.classList.add('kj-prehide');
+                    }
+                }
+            } catch (e) { }
+        })();
+    </script>
+    <style id="tsbrowser_video_independent_player_style" type="text/css">
+        [tsbrowser_force_max_size] {
+            width: 100% !important;
+            height: 100% !important;
+            left: 0px !important;
+            top: 0px !important;
+            margin: 0px !important;
+            padding: 0px !important;
+            transform: none !important;
+        }
+
+        [tsbrowser_force_fixed] {
+            position: fixed !important;
+            z-index: 9999 !important;
+            background: black !important;
+        }
+
+        [tsbrowser_force_hidden] {
+            opacity: 0 !important;
+            z-index: 0 !important;
+        }
+
+        [tsbrowser_hide_scrollbar] {
+            overflow: hidden !important;
+        }
+
+        [tsbrowser_display_none] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+
+        [tsbrowser_force_show] {
+            display: black !important;
+            visibility: visible !important;
+            opacity: 0;
+        }
+
+        .ballred {
+            background-color: rgb(255, 0, 0);
+            color: rgb(255, 255, 255);
+        }
+
+        .ballblue {
+            background-color: rgb(0, 0, 255);
+            color: rgb(255, 255, 255);
+        }
+
+        .ballgreen {
+            background-color: rgb(0, 153, 0);
+            color: rgb(255, 255, 255);
+        }
+    </style>
+</head>
+
+
+
+<body onselectstart="javascript:return(false);" oncontextmenu="javascript:return(false);">
+
+    <textarea readonly="" id="shareInfo" name="shareInfo" style="position:absolute;top:-9999px;"></textarea>
+
+    <div class="new-KJ-TabBox-box">
+        <div class="new-KJ-TabBox-box-tit">
+            <div class="new-KJ-TabBox-box-tit-l">新港彩<font class="kj-font-red"><span id="number"></span></font>
+            </div>
+            <div class="new-KJ-TabBox-box-tit-m">
+                <div class="kj-lotto-tit2"><span color="#FF0000">8886fcua.com</span></div>
+            </div>
+            <div class="new-KJ-TabBox-box-tit-r"><span class="kj-tit-countdown" id="kjTitCountdown"
+                    aria-live="polite">(倒计时--:--:--)</span><a target="_blank" href="/zahistory/"
+                    class="kj-font-red">历史记录<span id="nextIssue"></span></a></div>
+        </div>
+        <div class="new-KJ-TabBox-box-con kj-render-pending">
+            <div id="w1" class="kj-ball box m0">
+                <h2>
+                    <div id="haoma1"></div>
+                </h2>
+                <div id="shengxiao1" class="whsx"></div>
+            </div>
+            <div id="w2" class="kj-ball box m0">
+                <h2>
+                    <div id="haoma2"></div>
+                </h2>
+                <div id="shengxiao2" class="whsx"></div>
+            </div>
+            <div id="w3" class="kj-ball box m0">
+                <h2>
+                    <div id="haoma3"></div>
+                </h2>
+                <div id="shengxiao3" class="whsx"></div>
+            </div>
+            <div id="w4" class="kj-ball box m0">
+                <h2>
+                    <div id="haoma4"></div>
+                </h2>
+                <div id="shengxiao4" class="whsx"></div>
+            </div>
+            <div id="w5" class="kj-ball box m0">
+                <h2>
+                    <div id="haoma5"></div>
+                </h2>
+                <div id="shengxiao5" class="whsx"></div>
+            </div>
+            <div id="w6" class="kj-ball box m0">
+                <h2>
+                    <div id="haoma6"></div>
+                </h2>
+                <div id="shengxiao6" class="whsx"></div>
+            </div>
+            <div class="kj-add">+</div>
+            <div id="w7" class="kj-ball box m0">
+                <h2>
+                    <div id="haoma7"></div>
+                </h2>
+                <div id="shengxiao7" class="whsx"></div>
+            </div>
+        </div>
+        <div class="new-KJ-TabBox-box-foot">
+            <div class="new-KJ-TabBox-box-foot-l">下一期<font class="kj-font-red"><span id="qishu"></span></font> : <span id="nianyueri"></span> <span id="nextTime">21:00</span></div>
+            <div class="new-KJ-TabBox-box-foot-r">
+                <a class="new-KJ-TabBox-box-foot-r-sx" style="cursor:pointer;"
+                    onclick="return kjReloadWithFreeze();">刷新</a>
+            </div>
+        </div>
+    </div>
+    <div id="tmpinfo" style="display:none;">260,31,23,07,49,24,17,40,261,09,17,03-31,21:00</div>
+
+    <!-- 仅隐藏「下一期」行末尾倒计时，供 kjRenderNextCountdown 更新；标题栏 #kjTitCountdown 照常显示 -->
+    <div id="kj-footer-countdown-ghost" style="position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;margin:0!important;padding:0!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;border:0!important" aria-hidden="true"><span id="nextCountdown"></span></div>
+
+    <script src="/skin/jquery.min.js"></script>
+    <script>
+        /** KJ_LOCK_* ?? 0 ???????? 21:27=21*60+27, 21:32=21*60+32?????11*0+0???? 0 */
+        var KJ_LOCK_START_MIN = 21 * 60 + 27;
+        var KJ_LOCK_END_MIN = 21 * 60 + 32;
+
+        var kjNextPeriodCache = { qishu: '', number: '', nianyueri: '', nextTime: '' };
+        var kjRevealTimer = null;
+        var kjAnimatingIssue = '';
+        var kjWasPredraw = false;
+        var KJ_REVEAL_STEP_MS = 10000;
+        var KJ_REVEAL_TOTAL_STEPS = 7;
+        var kjReloadRenderGuardUntilMs = 0;
+        var kjLastRevealDone = false;
+        var kjLastDrawTsSec = null;
+        var kjFirstPaintDone = false;
+        var kjFreezeRender = false;
+        var kjLastReloadClickAt = 0;
+        var KJ_RELOAD_DEBOUNCE_MS = 800;
+
+        function kjPad2(n) { return (n < 10 ? '0' : '') + n; }
+
+        function kjMinutesToLabel(mins) {
+            var h = Math.floor(mins / 60);
+            var m = mins % 60;
+            return kjPad2(h) + ':' + kjPad2(m);
+        }
+
+        function kjBeijingHmNow() {
+            var parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
+            var h = 0, m = 0;
+            parts.forEach(function (p) {
+                if (p.type === 'hour') h = parseInt(p.value, 10);
+                if (p.type === 'minute') m = parseInt(p.value, 10);
+            });
+            return h * 60 + m;
+        }
+
+        function kjIsFrontend2127Lock() {
+            return kjNextSecState != null && !isNaN(kjNextSecState) && kjNextSecState > 0 && kjNextSecState <= 180;
+        }
+
+        function kjApplyFrontend2127Hide() {
+            if (!kjIsFrontend2127Lock()) return;
+            // ????????????????????
+            kjRenderGrayBalls();
+        }
+
+        function kjStopReveal(clearAnimatingIssue) {
+            if (kjRevealTimer) {
+                clearInterval(kjRevealTimer);
+                kjRevealTimer = null;
+            }
+            if (clearAnimatingIssue) kjAnimatingIssue = '';
+        }
+
+        function kjRenderGrayBalls() {
+            var gray = 'background-color: #999999; color: #ffffff;';
+            for (var i = 1; i <= 7; i++) {
+                $('#haoma' + i).text('--');
+                $('#shengxiao' + i).text('--');
+                $('#w' + i).attr('style', gray);
+            }
+        }
+
+        function kjEnsureBoardVisible() {
+            if (kjFirstPaintDone) return;
+            var con = document.querySelector('.new-KJ-TabBox-box-con');
+            if (!con) return;
+            con.classList.remove('kj-render-pending');
+            try { document.documentElement.classList.remove('kj-prehide'); } catch (e) { }
+            kjFirstPaintDone = true;
+        }
+
+        function kjReloadWithFreeze() {
+            var nowMs = Date.now();
+            if ((nowMs - kjLastReloadClickAt) < KJ_RELOAD_DEBOUNCE_MS) {
+                return false;
+            }
+            kjLastReloadClickAt = nowMs;
+            // ??????????????????1?????????
+            kjFreezeRender = true;
+            kjStopReveal(true);
+            kjRenderGrayBalls();
+            try {
+                var con = document.querySelector('.new-KJ-TabBox-box-con');
+                if (con) con.classList.add('kj-render-pending');
+            } catch (e) { }
+            try {
+                // ??????????????????????DOM
+                sessionStorage.setItem('kj_force_gray_until_ms', String(Date.now() + 200));
+            } catch (e) { }
+            window.location.reload();
+            return false;
+        }
+
+        function kjRenderOneBall(data, idx) {
+            var n = idx + 1;
+            $('#haoma' + n).text(data['haoma' + n] || '');
+            $('#shengxiao' + n).text(data['shengxiao' + n] || '');
+            $('#w' + n).attr('style', data['ys' + n] || 'background-color: #999999; color: #ffffff;');
+        }
+
+        function kjRenderAllBalls(data) {
+            for (var i = 0; i < 7; i++) {
+                kjRenderOneBall(data, i);
+            }
+        }
+
+        function kjRenderBallsUpTo(data, count) {
+            kjRenderGrayBalls();
+            for (var i = 0; i < count && i < KJ_REVEAL_TOTAL_STEPS; i++) {
+                kjRenderOneBall(data, i);
+            }
+        }
+
+        function kjGetRevealCountByDrawTs(drawTsSec) {
+            var ts = parseInt(drawTsSec, 10);
+            if (isNaN(ts) || ts <= 0) return null;
+            var elapsed = Date.now() - ts * 1000;
+            var count = Math.floor(elapsed / KJ_REVEAL_STEP_MS) + 1;
+            if (count < 0) count = 0;
+            if (count > KJ_REVEAL_TOTAL_STEPS) count = KJ_REVEAL_TOTAL_STEPS;
+            return count;
+        }
+
+        function kjGetIssueStartMs(issueKey, drawTsSec) {
+            var nowMs = Date.now();
+            var key = 'kj_issue_start_ms_' + issueKey;
+            var drawMs = (!isNaN(drawTsSec) && drawTsSec > 0) ? (drawTsSec * 1000) : null;
+            try {
+                if (drawMs !== null) {
+                    sessionStorage.setItem(key, String(drawMs));
+                    return drawMs;
+                }
+                var cached = sessionStorage.getItem(key);
+                var cachedMs = cached ? parseInt(cached, 10) : NaN;
+                if (!isNaN(cachedMs) && cachedMs > 0) return cachedMs;
+                sessionStorage.setItem(key, String(nowMs));
+                return nowMs;
+            } catch (e) {
+                return drawMs !== null ? drawMs : nowMs;
+            }
+        }
+
+        function kjAnimateRevealBalls(data, issueKey, drawTsSec) {
+            kjStopReveal(false);
+            kjAnimatingIssue = issueKey || '';
+            var localStartMs = Date.now();
+            function tick() {
+                var count = kjGetRevealCountByDrawTs(drawTsSec);
+                if (count === null) {
+                    // ????????????????????????
+                    count = Math.floor((Date.now() - localStartMs) / KJ_REVEAL_STEP_MS) + 1;
+                    if (count < 0) count = 0;
+                    if (count > KJ_REVEAL_TOTAL_STEPS) count = KJ_REVEAL_TOTAL_STEPS;
+                }
+                kjRenderBallsUpTo(data, count);
+                if (count >= KJ_REVEAL_TOTAL_STEPS) {
+                    kjStopReveal(true);
+                    return;
+                }
+            }
+            tick();
+            if (kjAnimatingIssue === issueKey) {
+                kjRevealTimer = setInterval(tick, 1000);
+            }
+        }
+
+        function kjFormatSecToHms(totalSec) {
+            if (totalSec == null || isNaN(totalSec) || totalSec < 0) return '--:--:--';
+            var h = Math.floor(totalSec / 3600);
+            var m = Math.floor((totalSec % 3600) / 60);
+            var s = totalSec % 60;
+            return kjPad2(h) + ':' + kjPad2(m) + ':' + kjPad2(s);
+        }
+
+        function kjRenderNextCountdown(secLeft, daojishiText) {
+            var el = document.getElementById('nextCountdown');
+            var tit = document.getElementById('kjTitCountdown');
+            var display = '--:--:--';
+            if (secLeft != null && !isNaN(secLeft)) {
+                if (secLeft < 0) secLeft = 0;
+                display = kjFormatSecToHms(secLeft);
+            } else if (typeof daojishiText === 'string' && daojishiText) {
+                display = daojishiText;
+            }
+            if (el) el.textContent = display;
+            if (tit) tit.textContent = '(倒计时' + display + ')';
+        }
+
+        var kjNextSecState = null;
+
+        function kjGetBjNowParts() {
+            var s = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Shanghai' });
+            var m = s.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/);
+            if (!m) return null;
+            return {
+                year: parseInt(m[1], 10),
+                month: parseInt(m[2], 10),
+                day: parseInt(m[3], 10),
+                hour: parseInt(m[4], 10),
+                minute: parseInt(m[5], 10),
+                second: parseInt(m[6], 10)
+            };
+        }
+
+        function kjGetBjNowTs() {
+            var now = kjGetBjNowParts();
+            return now ? kjBjPartsToTs(now) : null;
+        }
+
+        function kjBjPartsToTs(parts) {
+            if (!parts) return null;
+            return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour - 8, parts.minute, parts.second || 0);
+        }
+
+        function kjParseFooterHm(footerTime) {
+            if (!footerTime || typeof footerTime !== 'string') return null;
+            var m = footerTime.match(/(\d{1,2})\D+(\d{1,2})/);
+            if (!m) return null;
+            var h = parseInt(m[1], 10), mi = parseInt(m[2], 10);
+            if (isNaN(h) || isNaN(mi)) return null;
+            return { hour: h, minute: mi };
+        }
+
+        function kjCalcSecFromMdFooter(mdText, footerTime) {
+            if (!mdText || typeof mdText !== 'string') return null;
+            var md = mdText.match(/(\d{1,2})\D+(\d{1,2})/);
+            if (!md) return null;
+            var hm = kjParseFooterHm(footerTime);
+            if (!hm) return null;
+            var now = kjGetBjNowParts();
+            if (!now) return null;
+            var month = parseInt(md[1], 10);
+            var day = parseInt(md[2], 10);
+            if (isNaN(month) || isNaN(day)) return null;
+            var year = now.year;
+            if (now.month === 12 && month === 1) year += 1;
+            var target = { year: year, month: month, day: day, hour: hm.hour, minute: hm.minute, second: 0 };
+            var nowTs = kjBjPartsToTs(now);
+            var targetTs = kjBjPartsToTs(target);
+            if (nowTs == null || targetTs == null) return null;
+            if (targetTs < nowTs - 3600 * 1000) targetTs += 24 * 3600 * 1000;
+            var sec = Math.floor((targetTs - nowTs) / 1000);
+            return sec < 0 ? 0 : sec;
+        }
+
+        function kjSyncNextCountdown(secLeft, daojishiText) {
+            if (secLeft != null && !isNaN(secLeft)) {
+                kjNextSecState = secLeft < 0 ? 0 : secLeft;
+            } else {
+                kjNextSecState = null;
+            }
+            kjRenderNextCountdown(kjNextSecState, daojishiText);
+        }
+
+        function updateData() {
+            $.ajax({
+                url: '/ajax/getcode.php?_=' + Date.now(),
+                type: 'GET',
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (kjFreezeRender) return;
+                    var latestDrawTs = parseInt(data.draw_ts, 10);
+                    kjLastDrawTsSec = (!isNaN(latestDrawTs) && latestDrawTs > 0) ? latestDrawTs : null;
+                    kjLastRevealDone = parseInt(data.reveal_done, 10) === 1;
+                    if (data.qishu != null && String(data.qishu) !== '') kjNextPeriodCache.qishu = String(data.qishu);
+                    if (data.number != null && String(data.number) !== '') kjNextPeriodCache.number = String(data.number);
+                    if (data.nianyueri != null && String(data.nianyueri) !== '') kjNextPeriodCache.nianyueri = String(data.nianyueri);
+                    if (data.footer_time != null && String(data.footer_time) !== '') kjNextPeriodCache.nextTime = String(data.footer_time);
+                    var secLeft = null;
+                    if (data.seconds_to_next_draw != null && data.seconds_to_next_draw !== '') {
+                        secLeft = parseInt(data.seconds_to_next_draw, 10);
+                        if (isNaN(secLeft)) secLeft = null;
+                    }
+                    if (secLeft === null && data.next_draw_ts != null && data.next_draw_ts !== '') {
+                        var drawTs = parseInt(data.next_draw_ts, 10);
+                        var nowTs = kjGetBjNowTs();
+                        if (!isNaN(drawTs) && nowTs != null) {
+                            secLeft = Math.floor(drawTs - nowTs / 1000);
+                            if (isNaN(secLeft)) secLeft = null;
+                        }
+                    }
+                    if (secLeft === null) {
+                        secLeft = (function (str) {
+                            if (!str || typeof str !== 'string') return null;
+                            var p = str.split(':');
+                            if (p.length !== 3) return null;
+                            var h = parseInt(p[0], 10), m = parseInt(p[1], 10), s = parseInt(p[2], 10);
+                            if (isNaN(h) || isNaN(m) || isNaN(s)) return null;
+                            return h * 3600 + m * 60 + s;
+                        })(data.daojishi);
+                    }
+                    if (secLeft === null || secLeft <= 0) {
+                        var secByDate = kjCalcSecFromMdFooter(data.nianyueri, data.footer_time || '21:30');
+                        if (secByDate != null && secByDate > 0) secLeft = secByDate;
+                    }
+                    // ????????????????1??????????
+                    var forceGray = false;
+                    try {
+                        var fg = sessionStorage.getItem('kj_force_gray_until_ms');
+                        if (fg) {
+                            var fgMs = parseInt(fg, 10);
+                            if (!isNaN(fgMs) && Date.now() < fgMs) {
+                                forceGray = true;
+                            } else {
+                                sessionStorage.removeItem('kj_force_gray_until_ms');
+                            }
+                        }
+                    } catch (e) { }
+                    if (forceGray) {
+                        kjSyncNextCountdown(secLeft, data.daojishi);
+                        kjStopReveal(true);
+                        kjRenderGrayBalls();
+                        kjEnsureBoardVisible();
+                        kjWasPredraw = true;
+                        setTimeout(updateData, 100);
+                        return;
+                    }
+                    kjSyncNextCountdown(secLeft, data.daojishi);
+                    var predraw = (secLeft !== null && !isNaN(secLeft) && secLeft > 0 && secLeft <= 180);
+                    $('#xinao').text(data.xinao);
+                    $('#laoao').text(data.laoao);
+                    $('#xianggang').text(data.xianggang);
+                    $('#daojishi').text(data.daojishi);
+                    $('#nextTime').text(data.footer_time || '21:00');
+                    if (predraw) {
+                        $('#qishu').text((data.qishu != null && String(data.qishu) !== '') ? data.qishu : kjNextPeriodCache.qishu);
+                        $('#number').text((data.number != null && String(data.number) !== '') ? data.number : kjNextPeriodCache.number);
+                        $('#nianyueri').text((data.nianyueri != null && String(data.nianyueri) !== '') ? data.nianyueri : kjNextPeriodCache.nianyueri);
+                        $('#nextTime').text((data.footer_time != null && String(data.footer_time) !== '') ? data.footer_time : (kjNextPeriodCache.nextTime || '21:00'));
+                        kjStopReveal(true);
+                        kjRenderGrayBalls();
+                        kjEnsureBoardVisible();
+                        kjWasPredraw = true;
+                    } else {
+                        $('#qishu').text(data.qishu);
+                        $('#number').text(data.number);
+                        $('#nianyueri').text(data.nianyueri);
+                        $('#dangqi').text(data.dangqi);
+                        var issueKey = data.number != null ? String(data.number) : '';
+                        var drawTsSec = null;
+                        var hasStableRevealStart = false;
+                        if (data.reveal_start_ts != null && data.reveal_start_ts !== '') {
+                            drawTsSec = parseInt(data.reveal_start_ts, 10);
+                            hasStableRevealStart = !isNaN(drawTsSec) && drawTsSec > 0;
+                        }
+                        var revealDone = parseInt(data.reveal_done, 10) === 1;
+                        if (issueKey) {
+                            var backendCount = parseInt(data.reveal_count, 10);
+                            if (isNaN(backendCount) || backendCount < 1) backendCount = 1;
+                            if (backendCount > KJ_REVEAL_TOTAL_STEPS) backendCount = KJ_REVEAL_TOTAL_STEPS;
+                            var drawTs = parseInt(data.draw_ts, 10);
+                            var startMs = kjGetIssueStartMs(issueKey, drawTs);
+                            var elapsedSec = Math.floor((Date.now() - startMs) / 1000);
+                            if (elapsedSec < 0) elapsedSec = 0;
+                            var strictCap = null;
+                            if (elapsedSec < 70) {
+                                strictCap = Math.floor(elapsedSec / 10) + 1;
+                                if (strictCap < 1) strictCap = 1;
+                                if (strictCap > KJ_REVEAL_TOTAL_STEPS) strictCap = KJ_REVEAL_TOTAL_STEPS;
+                            }
+                            if (strictCap !== null) {
+                                var safeCount = revealDone ? KJ_REVEAL_TOTAL_STEPS : backendCount;
+                                if (safeCount > strictCap) safeCount = strictCap;
+                                kjStopReveal(true);
+                                kjRenderBallsUpTo(data, safeCount);
+                                kjEnsureBoardVisible();
+                                kjWasPredraw = false;
+                            } else if (revealDone) {
+                                kjStopReveal(true);
+                                kjRenderAllBalls(data);
+                                kjEnsureBoardVisible();
+                                kjWasPredraw = false;
+                            } else {
+                                kjStopReveal(true);
+                                kjRenderBallsUpTo(data, backendCount);
+                                kjEnsureBoardVisible();
+                                kjWasPredraw = false;
+                            }
+                        } else {
+                            kjStopReveal(true);
+                            kjRenderGrayBalls();
+                            kjEnsureBoardVisible();
+                            kjWasPredraw = false;
+                        }
+                    }
+                    setTimeout(updateData, 10000);
+                }
+            });
+        }
+        $(document).ready(function () {
+            try {
+                var guardText = sessionStorage.getItem('kj_reload_guard_until_ms');
+                if (guardText) {
+                    var guardMs = parseInt(guardText, 10);
+                    if (!isNaN(guardMs) && guardMs > Date.now()) {
+                        kjReloadRenderGuardUntilMs = guardMs;
+                    }
+                }
+            } catch (e) { }
+            setInterval(function () {
+                if (kjNextSecState != null && !isNaN(kjNextSecState)) {
+                    if (kjNextSecState > 0) kjNextSecState -= 1;
+                    kjRenderNextCountdown(kjNextSecState, null);
+                }
+                if (kjIsFrontend2127Lock()) kjApplyFrontend2127Hide();
+            }, 1000);
+            updateData();
+        });
+        window.addEventListener('beforeunload', function () {
+            try {
+                kjFreezeRender = true;
+                var con = document.querySelector('.new-KJ-TabBox-box-con');
+                if (con) con.classList.add('kj-render-pending');
+                // ???????????????????????????????????1????
+                if (kjLastRevealDone) {
+                    sessionStorage.removeItem('kj_reload_guard_until_ms');
+                    return;
+                }
+                if (kjLastDrawTsSec != null) {
+                    var elapsed = Math.floor(Date.now() / 1000) - kjLastDrawTsSec;
+                    if (elapsed >= 0 && elapsed < 70) {
+                        sessionStorage.setItem('kj_reload_guard_until_ms', String(Date.now() + 10000));
+                        return;
+                    }
+                }
+                sessionStorage.removeItem('kj_reload_guard_until_ms');
+            } catch (e) { }
+        });
+    </script>
+
+    <script type="text/javascript">
+
+
+
+        function GetRequest() {
+            //location.search ?????????? ?url=www.baidu.com
+            var url = location.search;
+            var theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = str.split("&");
+                for (var i = 0; i < strs.length; i++) {
+                    theRequest[strs[i].split("=")[0]] = unescape(strs[i].split("=")[1]);
+                }
+            }
+            return theRequest;
+        }
+        var ClientRequest = GetRequest();
+        console.info(ClientRequest);
+        var ReauesKey = ClientRequest['url'];
+        var dt = document.getElementById('test');
+        dt.innerHTML = ReauesKey;
+    </script>
+
+
+
+</body>
+
+</html>

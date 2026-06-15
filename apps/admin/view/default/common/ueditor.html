@@ -1,0 +1,60 @@
+<!-- 引入编辑器文件 -->
+<script type="text/javascript" charset="utf-8" src="{CORE_DIR}/extend/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="{CORE_DIR}/extend/ueditor/ueditor.all.min.js"> </script>
+<script type="text/javascript" charset="utf-8" src="{CORE_DIR}/extend/ueditor/lang/zh-cn/zh-cn.js"></script>
+<script>
+//初始化编辑器（主内容 editor；特区块等页的副行 editor_description）
+$(document).ready(function (e) {
+	// 正文编辑器层级须低于「副行」编辑器；整体高于 layui 表单下拉（comm.css 中 .layui-form-select dl 为 9999）
+	var ueOptMain = { maximumWords: 30000, zIndex: 10050 };
+	var ueOptSubtitle = { maximumWords: 30000, zIndex: 11000 };
+	if (document.getElementById('editor')) {
+		UE.getEditor('editor', ueOptMain);
+	}
+	// 副行编辑器：延后一帧再创建，避免 layui 表单布局未完成时宽度过窄导致工具栏竖排错乱
+	if (document.getElementById('editor_description')) {
+		setTimeout(function () {
+			var el = document.getElementById('editor_description');
+			var host = el && el.closest ? el.closest('.yuce-ueditor-host') : null;
+			var w = host ? host.offsetWidth : 0;
+			if (w < 280) {
+				var body = document.querySelector('.layui-body');
+				w = body ? Math.max(body.clientWidth - 130, 400) : 800;
+			}
+			var opt = $.extend({}, ueOptSubtitle, {
+				initialFrameWidth: w,
+				autoFloatEnabled: false
+			});
+			UE.getEditor('editor_description', opt);
+		}, 80);
+	}
+})
+</script>
+
+
+<script type="text/javascript">
+   <!-- 解决源码模式无法保存 -->
+  function editor_init() {
+      $('#edit').submit(function () {
+          if (typeof UE === 'undefined') return;
+          ['editor', 'editor_description'].forEach(function (id) {
+              try {
+                  var ed = UE.getEditor(id);
+                  if (ed && ed.queryCommandState('source') == 1) ed.execCommand('source');
+              } catch (err) {}
+          });
+      })
+  }
+
+  $(".addedit").on("click",'img',function(){
+	    editor=UE.getEditor('editor');
+		$img = $(this).attr("src");
+		editor.execCommand('inserthtml',"<img src='"+$img+"'>");
+   });
+
+</script>
+
+<script type="text/javascript">editor_init();</script>
+
+
+
