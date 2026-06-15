@@ -2089,15 +2089,151 @@ function collect_resolve_lottery_draw_for_admin(PDO $pdo, string $periodFilter, 
 }
 
 /**
- * 读取平码 bet 行（bets 表优先；无记录时从 parsed_json 回退）。
+ * @param array<string, mixed> $bet
+ * @param array<string, mixed> $sub
+ */
+function collect_pingma_fake_bet_row_from_bet(array $bet, array $sub, int $rowId): array
+{
+    $bet = pingma_normalize_bet_for_payout($bet);
+    $sel = $bet['selection'] ?? array();
+    return array(
+        'id' => $rowId,
+        'submission_id' => (int) ($sub['id'] ?? 0),
+        'play_type' => (string) ($bet['play_type'] ?? ''),
+        'play_label' => (string) ($bet['play_label'] ?? ''),
+        'selection_type' => (string) ($bet['selection_type'] ?? 'number'),
+        'selection_json' => json_encode(is_array($sel) ? $sel : array(), JSON_UNESCAPED_UNICODE),
+        'groups_json' => json_encode($bet['groups'] ?? array(), JSON_UNESCAPED_UNICODE),
+        'group_count' => (int) ($bet['group_count'] ?? 0),
+        'amount_per_group' => (float) ($bet['amount_per_group'] ?? 0),
+        'total_amount' => (float) ($bet['total_amount'] ?? 0),
+        'amount_mode' => (string) ($bet['amount_mode'] ?? 'per_group'),
+        'raw_segment' => (string) ($bet['raw_segment'] ?? $bet['display_text'] ?? ''),
+        'period_no' => (string) ($sub['period_no'] ?? ''),
+        'created_at' => (string) ($sub['created_at'] ?? ''),
+        'key_name' => (string) ($sub['key_name'] ?? ''),
+    );
+}
+
+/** @param array<int, array<string, mixed>> $rows */
+function collect_pingma_sum_rows_stake(array $rows): float
+{
+    $sum = 0.0;
+    foreach ($rows as $row) {
+        $bet = collect_pingma_bet_array_from_db_row($row);
+        $sum += (float) ($bet['total_amount'] ?? 0);
+    }
+    return round($sum, 2);
+}
+
+/**
+ * @param array<int, array<string, mixed>> $bets
+ * @return array<int, array<string, mixed>>
+ */
+function collect_pingma_fake_rows_from_bets(array $bets, array $sub, int &$fakeId): array
+{
+    $rows = array();
+    foreach ($bets as $bet) {
+        if (!is_array($bet)) {
+            continue;
+        }
+        $fakeId--;
+        $rows[] = collect_pingma_fake_bet_row_from_bet($bet, $sub, $fakeId);
+    }
+    return $rows;
+}
+
+/**
+ * 单条提交：bets 表 / parsed_json / 原文重解析，与 submission.total_amount 对齐。
+ *
+ * @param array<int, array<string, mixed>>|null $tableRows
+ * @return array<int, array<string, mixed>>
+ */
+function collect_pingma_resolve_submission_bet_rows(PDO $pdo, array $sub, ?array $tableRows = null): array
+{
+    $expectedTotal = round((float) ($sub['total_amount'] ?? 0), 2);
+    $decoded = json_decode((string) ($sub['parsed_json'] ?? ''), true);
+    if (!is_array($decoded)) {
+        $decoded = array();
+    }
+
+    $candidates = array();
+    if ($tableRows !== null && $tableRows) {
+        $candidates['table'] = $tableRows;
+    }
+
+    $jsonBets = $decoded['bets'] ?? array();
+    if (is_array($jsonBets) && $jsonBets) {
+        $fakeId = 0;
+        $candidates['json'] = collect_pingma_fake_rows_from_bets($jsonBets, $sub, $fakeId);
+    }
+
+    $parseSource = trim((string) ($decoded['original_raw_text'] ?? ''));
+    if ($parseSource === '') {
+        $parseSource = trim((string) ($sub['raw_text'] ?? ''));
+    }
+    if ($parseSource !== '' && !collect_pingma_looks_formatted_display($parseSource)) {
+        try {
+            $parsed = pingma_parse_submit_text($parseSource);
+            $fakeId = 0;
+            $candidates['parse'] = collect_pingma_fake_rows_from_bets($parsed['bets'] ?? array(), $sub, $fakeId);
+        } catch (Throwable $e) {
+            // ignore
+        }
+    }
+
+    if (!$candidates) {
+        return array();
+    }
+
+    $bestKey = null;
+    $bestDiff = null;
+    foreach ($candidates as $key => $rows) {
+        if (!$rows) {
+            continue;
+        }
+        $sum = collect_pingma_sum_rows_stake($rows);
+        if ($expectedTotal > 0 && abs($sum - $expectedTotal) < 0.01) {
+            return $rows;
+        }
+        $diff = $expectedTotal > 0 ? abs($sum - $expectedTotal) : $sum;
+        if ($bestDiff === null || $diff < $bestDiff) {
+            $bestDiff = $diff;
+            $bestKey = $key;
+        }
+    }
+
+    if ($bestKey !== null) {
+        return $candidates[$bestKey];
+    }
+
+    return reset($candidates) ?: array();
+}
+
+/**
+ * 读取平码 bet 行：按提交单 total_amount 校验，明细表与提交单不一致时回退 parsed_json / 原文重解析。
  *
  * @return array<int, array<string, mixed>>
  */
 function collect_pingma_fetch_bet_rows_for_payout(PDO $pdo, string $where, array $params): array
 {
-    $rows = array();
+    $stmt = $pdo->prepare(
+        "SELECT s.id, s.period_no, s.created_at, s.raw_text, s.parsed_json, s.total_amount, s.total_items,
+                COALESCE(NULLIF(TRIM(p.key_name), ''), CONCAT('渠道#', s.pass_id)) AS key_name
+         FROM collect_submissions s
+         LEFT JOIN collect_passkeys p ON p.id = s.pass_id
+         WHERE {$where}
+         ORDER BY s.id DESC"
+    );
+    $stmt->execute($params);
+    $subs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!$subs) {
+        return array();
+    }
+
+    $tableBySub = array();
     if (collect_bets_table_exists($pdo)) {
-        $stmt = $pdo->prepare(
+        $stmtB = $pdo->prepare(
             "SELECT b.id, b.submission_id, b.play_type, b.play_label, b.selection_type,
                     b.selection_json, b.groups_json, b.group_count, b.amount_per_group,
                     b.total_amount, b.amount_mode, b.raw_segment,
@@ -2107,61 +2243,35 @@ function collect_pingma_fetch_bet_rows_for_payout(PDO $pdo, string $where, array
              INNER JOIN collect_submissions s ON s.id = b.submission_id
              LEFT JOIN collect_passkeys p ON p.id = s.pass_id
              WHERE {$where}
-             ORDER BY b.id DESC"
+             ORDER BY b.id ASC"
         );
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        if ($rows) {
-            return $rows;
+        $stmtB->execute($params);
+        foreach ($stmtB->fetchAll(PDO::FETCH_ASSOC) as $br) {
+            $sid = (int) ($br['submission_id'] ?? 0);
+            if (!isset($tableBySub[$sid])) {
+                $tableBySub[$sid] = array();
+            }
+            $tableBySub[$sid][] = $br;
         }
     }
 
-    $stmt2 = $pdo->prepare(
-        "SELECT s.id AS submission_id, s.period_no, s.created_at, s.parsed_json,
-                COALESCE(NULLIF(TRIM(p.key_name), ''), CONCAT('渠道#', s.pass_id)) AS key_name
-         FROM collect_submissions s
-         LEFT JOIN collect_passkeys p ON p.id = s.pass_id
-         WHERE {$where}
-         ORDER BY s.id DESC"
-    );
-    $stmt2->execute($params);
-    $subs = $stmt2->fetchAll(PDO::FETCH_ASSOC);
-    $fakeId = 0;
+    $rows = array();
     foreach ($subs as $sub) {
+        if (!is_array($sub)) {
+            continue;
+        }
         $decoded = json_decode((string) ($sub['parsed_json'] ?? ''), true);
         if (!is_array($decoded) || collect_normalize_ball_scope((string) ($decoded['ball_scope'] ?? '')) !== 'pingma') {
             continue;
         }
-        $bets = $decoded['bets'] ?? array();
-        if (!is_array($bets)) {
-            continue;
-        }
-        foreach ($bets as $bet) {
-            if (!is_array($bet)) {
-                continue;
-            }
-            $bet = pingma_recalc_bet_amounts($bet);
-            $fakeId--;
-            $sel = $bet['selection'] ?? array();
-            $rows[] = array(
-                'id' => $fakeId,
-                'submission_id' => (int) ($sub['submission_id'] ?? 0),
-                'play_type' => (string) ($bet['play_type'] ?? ''),
-                'play_label' => (string) ($bet['play_label'] ?? ''),
-                'selection_type' => (string) ($bet['selection_type'] ?? 'number'),
-                'selection_json' => json_encode(is_array($sel) ? $sel : array(), JSON_UNESCAPED_UNICODE),
-                'groups_json' => json_encode($bet['groups'] ?? array(), JSON_UNESCAPED_UNICODE),
-                'group_count' => (int) ($bet['group_count'] ?? 0),
-                'amount_per_group' => (float) ($bet['amount_per_group'] ?? 0),
-                'total_amount' => (float) ($bet['total_amount'] ?? 0),
-                'amount_mode' => (string) ($bet['amount_mode'] ?? 'per_group'),
-                'raw_segment' => (string) ($bet['raw_segment'] ?? ''),
-                'period_no' => (string) ($sub['period_no'] ?? ''),
-                'created_at' => (string) ($sub['created_at'] ?? ''),
-                'key_name' => (string) ($sub['key_name'] ?? ''),
-            );
+        $sid = (int) ($sub['id'] ?? 0);
+        $tableRows = $tableBySub[$sid] ?? null;
+        $resolved = collect_pingma_resolve_submission_bet_rows($pdo, $sub, $tableRows);
+        foreach ($resolved as $r) {
+            $rows[] = $r;
         }
     }
+
     return $rows;
 }
 
