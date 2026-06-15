@@ -1136,15 +1136,6 @@
       } else {
         document.getElementById('pingmaStatsWarn').classList.add('hidden');
       }
-      const periodFilterVal = document.getElementById('periodNo').value.trim();
-      let drawHtml = '';
-      if (data.lotteryDraw && data.lotteryDraw.teMa) {
-        const ld = data.lotteryDraw;
-        const z = (ld.zhengMa || []).join(', ');
-        drawHtml = `<p style="background:#f6ffed;border:1px solid #b7eb8f;padding:8px;border-radius:4px;">开奖对照（<code>ay_kjdata</code>）期号 <strong>${ld.periodNumber}</strong> 正码 ${z} <strong>特码 ${ld.teMa}</strong></p>`;
-      } else if (periodFilterVal && data.lotteryDraw === null) {
-        drawHtml = '<p style="color:#888;font-size:13px;">该期号在开奖表中无记录（请确认与 <code>ay_kjdata.number</code> 完全一致）。</p>';
-      }
       const ch = document.getElementById('channelNameFilter').value.trim();
       const sel = document.getElementById('passIdFilter');
       let passLine = '';
@@ -1157,7 +1148,7 @@
       const groupsLine = isPingma
         ? `<p>【平码】总组数：${ov.total_groups || 0}</p>`
         : '';
-      document.getElementById('overview').innerHTML = warn + drawHtml + passLine +
+      document.getElementById('overview').innerHTML = warn + passLine +
         `<p>【${scopeLabel}】总提交次数：${ov.submit_count || 0}，单据总金额：${ov.total_amount || 0}</p>` +
         groupsLine +
         (isPingma

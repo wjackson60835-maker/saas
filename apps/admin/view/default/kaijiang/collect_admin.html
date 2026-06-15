@@ -988,14 +988,8 @@
       passLine = `<p style="color:#666;font-size:13px;">筛选渠道：<strong>${esc(sel.options[sel.selectedIndex].text)}</strong></p>`;
     }
     const scopeLabel = isPingma ? '平码' : '特码';
-    let drawHtml = '';
-    if (data.lotteryDraw && data.lotteryDraw.teMa) {
-      const ld = data.lotteryDraw;
-      const z = (ld.zhengMa || []).join(', ');
-      drawHtml = `<p style="background:#f6ffed;border:1px solid #b7eb8f;padding:8px;border-radius:4px;">开奖对照 期号 <strong>${esc(ld.periodNumber)}</strong> 正码 ${esc(z)} 特码 <strong>${esc(ld.teMa)}</strong></p>`;
-    }
     const groupsLine = isPingma ? `<p>【平码】总组数：${ov.total_groups || 0}</p>` : '';
-    document.getElementById('overview').innerHTML = drawHtml + passLine +
+    document.getElementById('overview').innerHTML = passLine +
       `<p>【${scopeLabel}】总提交次数：${ov.submit_count || 0}，单据总金额：${ov.total_amount || 0}</p>` +
       groupsLine +
       (isPingma ? '' : `<p>明细汇总：正码 ${ov.normal_amount || 0} / ${ov.normal_item_count || 0} 条；特号 ${ov.special_amount || 0} / ${ov.special_item_count || 0} 条</p>`);
